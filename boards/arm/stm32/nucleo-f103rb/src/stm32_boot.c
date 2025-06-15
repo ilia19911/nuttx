@@ -30,6 +30,7 @@
 #include <arch/board/board.h>
 
 #include "nucleo-f103rb.h"
+#include "stm32.h"
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -69,6 +70,12 @@ void stm32_boardinitialize(void)
 #ifdef CONFIG_ARCH_LEDS
   board_autoled_initialize();
 #endif
+
+#ifdef CONFIG_SPI
+    stm32_spidev_initialize();
+#endif
+
+
 }
 
 /****************************************************************************

@@ -1301,6 +1301,7 @@ static int sx126x_setup_radio(FAR struct sx126x_dev_s *dev)
 
 static int sx126x_irq0handler(int irq, FAR void *context, FAR void *arg)
 {
+   // syslog(LOG_INFO, "[SX126X] DIO1 IRQ called");
   FAR struct sx126x_dev_s *dev = (FAR struct sx126x_dev_s *)arg;
 
   DEBUGASSERT(dev != NULL);

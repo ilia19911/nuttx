@@ -30,6 +30,7 @@
 #include <nuttx/config.h>
 #include <nuttx/compiler.h>
 #include <stdint.h>
+#include <nuttx/spi/spi.h>
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -257,6 +258,10 @@ int stm32_pwm_setup(void);
 
 #ifdef CONFIG_ADC
 int stm32_adc_setup(void);
+#endif
+
+#ifdef CONFIG_LPWAN_SX126X
+void stm32_sx1262_initialize(void);
 #endif
 
 /****************************************************************************

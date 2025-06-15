@@ -128,6 +128,10 @@ int stm32_bringup(void)
     }
 #endif
 
+#ifdef CONFIG_LPWAN_SX126X
+  stm32_sx1262_initialize();
+#endif
+
 #ifdef CONFIG_SENSORS_QENCODER
   /* Initialize and register the qencoder driver */
 

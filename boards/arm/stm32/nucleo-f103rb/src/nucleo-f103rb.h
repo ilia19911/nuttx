@@ -139,4 +139,12 @@ int stm32_foc_setup(void);
 int stm32_adc_setup(void);
 #endif
 
+#ifdef CONFIG_SPI
+void  stm32_spidev_initialize(void);
+#endif
+
+#ifdef CONFIG_LPWAN_SX126X
+void stm32_sx1262_initialize(void);
+#endif
+
 #endif /* __BOARDS_ARM_STM32_NUCLEO_F103RB_SRC_NUCLEO_F103RB_H */

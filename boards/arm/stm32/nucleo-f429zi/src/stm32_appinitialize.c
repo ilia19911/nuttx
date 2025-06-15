@@ -221,6 +221,9 @@ int board_app_initialize(uintptr_t arg)
   board_amg88xx_initialize(1);
 #endif
 
+#ifdef CONFIG_LPWAN_SX126X
+  stm32_sx1262_initialize();
+#endif
   UNUSED(ret);
   return OK;
 }
