@@ -46,10 +46,6 @@ ifeq ($(CONFIG_STM32H7_SPI),y)
 CSRCS += stm32_spi.c
 endif
 
-ifeq ($(CONFIG_STM32H7_I2C),y)
-CSRCS += stm32_i2c.c
-endif
-
 ifeq ($(CONFIG_STM32H7_OTGFS),y)
 CSRCS += stm32_usb.c
 endif
@@ -88,6 +84,10 @@ endif
 
 ifeq ($(CONFIG_WL_NRF24L01),y)
 CSRCS += stm32_nrf24l01.c
+endif
+
+ifeq ($(CONFIG_SENSORS_MPU60X0),y)
+CSRCS += stm32_mpu6000.c
 endif
 
 ifeq ($(CONFIG_DEV_GPIO),y)

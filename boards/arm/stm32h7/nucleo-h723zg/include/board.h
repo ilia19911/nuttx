@@ -401,6 +401,18 @@
 #define GPIO_I2C2_SDA     (GPIO_I2C2_SDA_2  | GPIO_SPEED_50MHz) /* PF0 - D68 */
 #define GPIO_I2C2_SMBA    (GPIO_I2C2_SMBA_2 | GPIO_SPEED_50MHz) /* PF2 - D70 */
 
+/* I2C3 Use Nucleo I2C3 pins */
+
+#define GPIO_I2C3_SCL     (GPIO_I2C3_SCL_2  | GPIO_SPEED_50MHz) /* PF1 - D69 */
+#define GPIO_I2C3_SDA     (GPIO_I2C3_SDA_2  | GPIO_SPEED_50MHz) /* PF0 - D68 */
+#define GPIO_I2C3_SMBA    (GPIO_I2C3_SMBA_2 | GPIO_SPEED_50MHz) /* PF2 - D70 */
+
+/* I2C4 Use Nucleo I2C4 pins */
+
+#define GPIO_I2C4_SCL     (GPIO_I2C4_SCL_2  | GPIO_SPEED_50MHz) /* PF1 - D69 */
+#define GPIO_I2C4_SDA     (GPIO_I2C4_SDA_2  | GPIO_SPEED_50MHz) /* PF0 - D68 */
+#define GPIO_I2C4_SMBA    (GPIO_I2C4_SMBA_2 | GPIO_SPEED_50MHz) /* PF2 - D70 */
+
 /* SPI3 */
 
 #define GPIO_SPI3_MISO    (GPIO_SPI3_MISO_1 | GPIO_SPEED_50MHz) /* PB4 */

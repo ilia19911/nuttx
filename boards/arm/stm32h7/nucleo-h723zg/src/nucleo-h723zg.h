@@ -203,10 +203,23 @@
  * NCD - PF12 (D8)
  */
 
-#define GPIO_MMCSD_CS    (GPIO_OUTPUT | GPIO_PUSHPULL | GPIO_SPEED_50MHz | \
-                          GPIO_OUTPUT_SET | GPIO_PORTD | GPIO_PIN15)
-#define GPIO_MMCSD_NCD    (GPIO_INPUT | GPIO_PULLUP | GPIO_EXTI |  \
-                           GPIO_PORTF | GPIO_PIN12)
+/* OMNIBUSF4 GPIOs **********************************************************/
+
+#define MPU6000_ADDRESS   0x68
+#define MPU6000_1_SCL  (GPIO_I2C1_SCL_2|GPIO_SPEED_50MHz)
+#define MPU6000_1_SDA  (GPIO_I2C1_SDA_2|GPIO_SPEED_50MHz)
+
+#define MPU6000_2_SCL  (GPIO_I2C2_SCL_2|GPIO_SPEED_50MHz)
+#define MPU6000_2_SDA  (GPIO_I2C2_SDA_2|GPIO_SPEED_50MHz)
+#define MPU6000_3_SCL  (GPIO_I2C3_SCL_1|GPIO_SPEED_50MHz)
+#define MPU6000_3_SDA  (GPIO_I2C3_SDA_1|GPIO_SPEED_50MHz)
+#define MPU6000_4_SCL  (GPIO_I2C4_SCL_1|GPIO_SPEED_50MHz)
+#define MPU6000_4_SDA  (GPIO_I2C4_SDA_1|GPIO_SPEED_50MHz)
+
+#define DEVNODE_MPU6000_0   "/dev/imu0"
+#define DEVNODE_MPU6000_1   "/dev/imu1"
+#define DEVNODE_MPU6000_2   "/dev/imu2"
+#define DEVNODE_MPU6000_3   "/dev/imu3"
 
 /* LMS9DS1 configuration */
 
@@ -291,6 +304,18 @@ int stm32_gpio_initialize(void);
  *   USB-related GPIO pins for the NUCLEO-H723ZG board.
  *
  ****************************************************************************/
+
+/****************************************************************************
+ * Name: stm32_mpu6000_initialize
+ *
+ * Description:
+ *  Initialize the MPU6000 device.
+ *
+ ****************************************************************************/
+
+#ifdef CONFIG_SENSORS_MPU60X0
+int stm32_mpu6000_initialize(void);
+#endif
 
 #ifdef CONFIG_STM32H7_OTGFS
 void weak_function stm32_usbinitialize(void);
