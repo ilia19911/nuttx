@@ -284,7 +284,8 @@ static void dump_stacks(FAR struct tcb_s *rtcb, uintptr_t sp)
   else
     {
       force = true;
-      _alert("ERROR: Stack pointer is not within the stack\n");
+      _alert("ERROR: Stack pointer %" PRIxPTR "is not within the stack\n",
+             sp);
     }
 
 #if CONFIG_ARCH_INTERRUPTSTACK > 0
@@ -295,7 +296,7 @@ static void dump_stacks(FAR struct tcb_s *rtcb, uintptr_t sp)
                      intstack_base,
                      intstack_size,
 #ifdef CONFIG_STACK_COLORATION
-                     up_check_intstack(cpu)
+                     up_check_intstack(cpu, 0)
 #else
                      0
 #endif
@@ -307,6 +308,9 @@ static void dump_stacks(FAR struct tcb_s *rtcb, uintptr_t sp)
                     up_getusrsp((FAR void *)running_regs()) : 0;
       if (tcbstack_sp < tcbstack_base || tcbstack_sp >= tcbstack_top)
         {
+          _alert("ERROR: Stack pointer %" PRIxPTR " is not within the"
+                 " stack\n", tcbstack_sp);
+
           tcbstack_sp = 0;
           force = true;
         }
@@ -331,7 +335,7 @@ static void dump_stacks(FAR struct tcb_s *rtcb, uintptr_t sp)
                      tcbstack_base,
                      tcbstack_size,
 #ifdef CONFIG_STACK_COLORATION
-                     up_check_tcbstack(rtcb)
+                     up_check_tcbstack(rtcb, rtcb->adj_stack_size)
 #else
                      0
 #endif
@@ -372,7 +376,7 @@ static void dump_task(FAR struct tcb_s *tcb, FAR void *arg)
 #endif
 
 #ifdef CONFIG_STACK_COLORATION
-  stack_used = up_check_tcbstack(tcb);
+  stack_used = up_check_tcbstack(tcb, tcb->adj_stack_size);
   if (tcb->adj_stack_size > 0 && stack_used > 0)
     {
       /* Use fixed-point math with one decimal place */
@@ -427,7 +431,7 @@ static void dump_task(FAR struct tcb_s *tcb, FAR void *arg)
          , tcb->stack_base_ptr
          , tcb->adj_stack_size
 #ifdef CONFIG_STACK_COLORATION
-         , up_check_tcbstack(tcb)
+         , up_check_tcbstack(tcb, tcb->adj_stack_size)
          , stack_filled / 10, stack_filled % 10
          , (stack_filled >= 10 * 80 ? '!' : ' ')
 #endif
@@ -456,10 +460,10 @@ static void dump_backtrace(FAR struct tcb_s *tcb, FAR void *arg)
  ****************************************************************************/
 
 #ifdef CONFIG_SCHED_DUMP_ON_EXIT
-static void dump_filelist(FAR struct tcb_s *tcb, FAR void *arg)
+static void dump_fdlist(FAR struct tcb_s *tcb, FAR void *arg)
 {
-  FAR struct filelist *filelist = &tcb->group->tg_filelist;
-  files_dumplist(filelist);
+  FAR struct fdlist *list = &tcb->group->tg_fdlist;
+  fdlist_dump(list);
 }
 #endif
 
@@ -496,7 +500,7 @@ static void dump_tasks(void)
   for (cpu = 0; cpu < CONFIG_SMP_NCPUS; cpu++)
     {
 #  ifdef CONFIG_STACK_COLORATION
-      size_t stack_used = up_check_intstack(cpu);
+      size_t stack_used = up_check_intstack(cpu, 0);
       size_t stack_filled = 0;
 
       if (stack_used > 0)
@@ -548,7 +552,7 @@ static void dump_tasks(void)
 #endif
 
 #ifdef CONFIG_SCHED_DUMP_ON_EXIT
-  nxsched_foreach(dump_filelist, NULL);
+  nxsched_foreach(dump_fdlist, NULL);
 #endif
 }
 

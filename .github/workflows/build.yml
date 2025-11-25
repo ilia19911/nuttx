@@ -15,10 +15,16 @@ name: Build
 on:
   pull_request:
     paths-ignore:
+      - 'AUTHORS'
+      - 'CONTRIBUTING.md'
+      - '**/CODEOWNERS'
       - 'Documentation/**'
       - 'tools/ci/docker/linux/**'
+      - 'tools/codeowners/*'
   push:
     paths-ignore:
+      - 'AUTHORS'
+      - 'CONTRIBUTING.md'
       - 'Documentation/**'
     branches:
       - 'releases/*'
@@ -90,7 +96,7 @@ jobs:
           echo "apps_ref=$APPS_REF" >> $GITHUB_OUTPUT
 
       - name: Checkout nuttx repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: apache/nuttx
           ref: ${{ steps.gittargets.outputs.os_ref }}
@@ -100,7 +106,7 @@ jobs:
         run: git -C sources/nuttx fetch --tags
 
       - name: Checkout apps repo
-        uses: actions/checkout@v4
+        uses: actions/checkout@v5
         with:
           repository: apache/nuttx-apps
           ref: ${{ steps.gittargets.outputs.apps_ref }}
@@ -111,7 +117,7 @@ jobs:
         run: tar zcf sources.tar.gz sources
 
       - name: Archive Source Bundle
-        uses: actions/upload-artifact@v4
+        uses: actions/upload-artifact@v5
         with:
           name: source-bundle
           path: sources.tar.gz
@@ -149,7 +155,7 @@ jobs:
     steps:
 
       - name: Download Source Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: source-bundle
           path: .
@@ -188,11 +194,56 @@ jobs:
                 ./cibuild.sh -c -A -N -R -S testlist/${{matrix.boards}}.dat
             fi
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         if: ${{ always() }}
         with:
           name: linux-${{matrix.boards}}-builds
           path: buildartifacts/
+        continue-on-error: true
+
+  # Test the out-of-tree build
+  OOT-Build:
+    needs: Linux
+    runs-on: ubuntu-latest
+    env:
+      DOCKER_BUILDKIT: 1
+    steps:
+      - name: Download Source Artifact
+        uses: actions/download-artifact@v6
+        with:
+          name: source-bundle
+          path: .
+
+      - name: Extract sources
+        run: tar zxf sources.tar.gz
+
+      - name: Docker Login
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: Export NuttX Repo SHA
+        run: echo "nuttx_sha=`git -C sources/nuttx rev-parse HEAD`" >> $GITHUB_ENV
+
+      - name: Run Out-of-Tree Build Test
+        uses: ./sources/nuttx/.github/actions/ci-container
+        env:
+          BLOBDIR: /tools/blobs
+        with:
+          run: |
+            echo "::add-matcher::sources/nuttx/.github/gcc.json"
+            git config --global --add safe.directory /github/workspace/sources/nuttx
+            git config --global --add safe.directory /github/workspace/sources/apps
+            cd sources/nuttx
+            ./tools/ci/cibuild-oot.sh
+
+      - uses: actions/upload-artifact@v5
+        if: ${{ always() }}
+        with:
+          name: oot-build-artifacts
+          path: sources/apps/testing/cxx-oot-build
         continue-on-error: true
 
   # Select the macOS Builds based on PR Arch Label
@@ -217,7 +268,7 @@ jobs:
         boards: ${{ fromJSON(needs.macOS-Arch.outputs.selected_builds) }}
     steps:
       - name: Download Source Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: source-bundle
           path: .
@@ -239,7 +290,7 @@ jobs:
 
       # Released version of Cython has issues with Python 11. Set runner to use Python 3.10
       # https://github.com/cython/cython/issues/4500
-      - uses: actions/setup-python@v5
+      - uses: actions/setup-python@v6
         with:
           python-version: '3.10'
       - name: Run Builds
@@ -249,7 +300,7 @@ jobs:
           cd sources/nuttx/tools/ci
           ./cibuild.sh -i -c -A -R testlist/${{matrix.boards}}.dat
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: macos-${{matrix.boards}}-builds
           path: buildartifacts/
@@ -279,7 +330,7 @@ jobs:
       run:
         shell: msys2 {0}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: msys2/setup-msys2@v2
         with:
           msystem: MSYS
@@ -300,8 +351,9 @@ jobs:
             zlib-devel
             cmake
             ninja
-            python-pip 
+            python-pip
             vim
+            genromfs
 
       - name: pip3 install
         run: |
@@ -311,7 +363,7 @@ jobs:
       - run: git config --global core.autocrlf false
 
       - name: Download Source Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: source-bundle
           path: .
@@ -331,7 +383,7 @@ jobs:
           cd sources/nuttx/tools/ci
           ./cibuild.sh -g -i -A -C -N -R testlist/${{matrix.boards}}.dat
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: msys2-${{matrix.boards}}-builds
           path: buildartifacts/
@@ -352,10 +404,10 @@ jobs:
     if: ${{ needs.msvc-Arch.outputs.skip_all_builds != '1' }}
     runs-on: windows-latest
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       # Set up Python environment and install kconfiglib
       - name: Set up Python and install kconfiglib
-        uses: actions/setup-python@v5
+        uses: actions/setup-python@v6
         with:
           python-version: '3.10'
       - name: Install kconfiglib
@@ -365,7 +417,7 @@ jobs:
       - run: git config --global core.autocrlf false
 
       - name: Download Source Artifact
-        uses: actions/download-artifact@v4
+        uses: actions/download-artifact@v6
         with:
           name: source-bundle
           path: .
@@ -373,7 +425,7 @@ jobs:
       - name: Extract sources
         run: |
           7z x sources.tar.gz -y
-          7z x sources.tar -y
+          7z x sources.tar -y -snld
 
       - name: Run Builds
         run: |
@@ -383,7 +435,7 @@ jobs:
           cd sources\nuttx\tools\ci
           .\cibuild.ps1 -n -i -A -C -N testlist\windows.dat
 
-      - uses: actions/upload-artifact@v4
+      - uses: actions/upload-artifact@v5
         with:
           name: msvc-builds
           path: ./sources/buildartifacts/

@@ -129,10 +129,16 @@
  */
 
 	.text
+#ifndef __ghs__
 	.syntax	unified
+#endif
 	.arm
 	.global	__start
+#ifdef __ghs__
+	.type	__start, $function
+#else
 	.type	__start, #function
+#endif
 
 __start:
 	/* Get cpuindex, cpu0 continue boot, others wait event from cpu0 */
@@ -142,7 +148,17 @@ __start:
 	cmp		r0, #0
 #if defined(CONFIG_SMP) && CONFIG_SMP_NCPUS > 1
 	beq		__cpu0_start
+
+#ifdef CONFIG_ARM_BUSY_WAIT
+	ldr		r2, =CONFIG_ARM_BUSY_WAIT_FLAG_ADDR
+1:
+	ldr		r1, [r2, #0]
+	cmp		r1, #0
+	beq		1b
+#else
 	wfe
+#endif
+
 	cmp		r0, #1
 	beq		__cpu1_start
 #  if CONFIG_SMP_NCPUS > 2
@@ -247,6 +263,13 @@ __cpu0_start:
 	mov		lr, #0				/* LR = return address (none) */
 	b		nx_start			/* Branch to nx_start */
 
+#if defined(CONFIG_ARM_BUSY_WAIT) && defined(CONFIG_SMP)
+	ldr		r0, =CONFIG_ARM_BUSY_WAIT_FLAG_ADDR
+	mov		r1, #1
+	str		r1, [r0]
+	dsb		sy
+#endif
+
 	/* .text Data */
 
 .Lstackpointer:
@@ -258,7 +281,11 @@ __cpu0_start:
  ***************************************************************************/
 
 	.global	arm_data_initialize
+#ifdef __ghs__
+	.type	arm_data_initialize, $function
+#else
 	.type	arm_data_initialize, #function
+#endif
 
 arm_data_initialize:
 
@@ -337,7 +364,11 @@ arm_data_initialize:
  ***************************************************************************/
 
 	.global	hsctlr_initialize
+#ifdef __ghs__
+	.type	hsctlr_initialize, $function
+#else
 	.type	hsctlr_initialize, #function
+#endif
 
 hsctlr_initialize:
 	mrc		CP15_HSCTLR(r0)		/* Get Hyp System Control Register */
@@ -369,7 +400,11 @@ hsctlr_initialize:
  ***************************************************************************/
 
 	.global	sctlr_initialize
+#ifdef __ghs__
+	.type	sctlr_initialize, $function
+#else
 	.type	sctlr_initialize, #function
+#endif
 
 sctlr_initialize:
 	/* Configure the system control register (see sctrl.h) */
@@ -536,7 +571,11 @@ sctlr_initialize:
 	 * end of memory.  See g_idle_topstack below.
 	 */
 
+#ifdef __ghs__
+	.type	.Linitparms, $object
+#else
 	.type	.Linitparms, %object
+#endif
 .Linitparms:
 	.long	_sbss
 	.long	_ebss
@@ -547,7 +586,11 @@ sctlr_initialize:
 	.long	_sys_vector_start
 
 #ifdef CONFIG_BOOT_RUNFROMFLASH
+#ifdef __ghs__
+	.type	.Ldatainit, $object
+#else
 	.type	.Ldatainit, %object
+#endif
 .Ldatainit:
 	.long	_eronly					/* Where .data defaults are stored in FLASH */
 	.long	_sdata					/* Where .data needs to reside in SDRAM */
@@ -555,7 +598,11 @@ sctlr_initialize:
 #endif
 
 #ifdef CONFIG_ARCH_RAMFUNCS
+#ifdef __ghs__
+	.type	.Lfuncinit, $object
+#else
 	.type	.Lfuncinit, %object
+#endif
 .Lfuncinit:
 	.long	_framfuncs				/* Where RAM functions are stored in FLASH */
 .Lramfuncs:
@@ -576,7 +623,11 @@ sctlr_initialize:
 	.section	.rodata, "a"
 	.align	4
 	.globl	g_idle_topstack
+#ifdef __ghs__
+	.type	g_idle_topstack, $object
+#else
 	.type	g_idle_topstack, object
+#endif
 
 g_idle_topstack:
 

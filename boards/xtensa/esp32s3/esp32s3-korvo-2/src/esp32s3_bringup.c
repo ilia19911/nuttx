@@ -81,11 +81,11 @@
 #  include "esp32s3_rtc_lowerhalf.h"
 #endif
 
-#ifdef CONFIG_ESP32S3_EFUSE
-#  include "esp32s3_efuse.h"
+#ifdef CONFIG_ESPRESSIF_EFUSE
+#  include "espressif/esp_efuse.h"
 #endif
 
-#ifdef CONFIG_ESP32S3_LEDC
+#ifdef CONFIG_ESPRESSIF_LEDC
 #  include "esp32s3_board_ledc.h"
 #endif
 
@@ -140,11 +140,14 @@
 
 int esp32s3_bringup(void)
 {
-  int ret;
+  int ret = OK;
 #if (defined(CONFIG_ESPRESSIF_I2S0) && !defined(CONFIG_AUDIO_CS4344) && \
      !defined(CONFIG_AUDIO_ES8311)) || defined(CONFIG_ESPRESSIF_I2S1)
   bool i2s_enable_tx;
   bool i2s_enable_rx;
+#endif
+#ifdef CONFIG_AUDIO_ES8311
+  struct i2c_master_s *i2c;
 #endif
 
 #if defined(CONFIG_ESP32S3_SPIRAM) && \
@@ -174,8 +177,8 @@ int esp32s3_bringup(void)
   #endif
 #endif
 
-#if defined(CONFIG_ESP32S3_EFUSE)
-  ret = esp32s3_efuse_initialize("/dev/efuse");
+#if defined(CONFIG_ESPRESSIF_EFUSE)
+  ret = esp_efuse_initialize("/dev/efuse");
   if (ret < 0)
     {
       syslog(LOG_ERR, "ERROR: Failed to init EFUSE: %d\n", ret);
@@ -203,13 +206,13 @@ int esp32s3_bringup(void)
     }
 #endif
 
-#ifdef CONFIG_ESP32S3_LEDC
+#ifdef CONFIG_ESPRESSIF_LEDC
   ret = esp32s3_pwm_setup();
   if (ret < 0)
     {
       syslog(LOG_ERR, "ERROR: esp32s3_pwm_setup() failed: %d\n", ret);
     }
-#endif /* CONFIG_ESP32S3_LEDC */
+#endif /* CONFIG_ESPRESSIF_LEDC */
 
 #ifdef CONFIG_ESP32S3_TIMER
   /* Configure general purpose timers */
@@ -311,8 +314,22 @@ int esp32s3_bringup(void)
   esp32s3_configgpio(SPEAKER_ENABLE_GPIO, OUTPUT);
   esp32s3_gpiowrite(SPEAKER_ENABLE_GPIO, true);
 
-  ret = esp32s3_es8311_initialize(ESP32S3_I2C0, ES8311_I2C_ADDR,
-                                  ES8311_I2C_FREQ, ESP32S3_I2S0);
+  i2c = esp32s3_i2cbus_initialize(ESP32S3_I2C0);
+  if (i2c == NULL)
+    {
+      syslog(LOG_ERR, "Failed to initialize I2C%d\n", ESP32S3_I2C0);
+      ret = -ENODEV;
+    }
+  else
+    {
+      ret = esp32s3_es8311_initialize(i2c, ES8311_I2C_ADDR,
+                                      ES8311_I2C_FREQ, ESP32S3_I2S0);
+      if (ret != OK)
+        {
+          syslog(LOG_ERR, "Failed to initialize ES8311 audio: %d\n", ret);
+        }
+    }
+
   if (ret != OK)
     {
       syslog(LOG_ERR, "Failed to initialize ES8311 audio: %d\n", ret);

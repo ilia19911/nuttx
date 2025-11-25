@@ -40,6 +40,7 @@ config ARCH_ARM64
 	select ARCH_HAVE_PERF_EVENTS
 	select ONESHOT
 	select LIBC_ARCH_ELF_64BIT if LIBC_ARCH_ELF
+	select ONESHOT_COUNT
 	---help---
 		The ARM64 architectures
 
@@ -118,6 +119,7 @@ config ARCH_SIM
 	select ARCH_SETJMP_H
 	select ALARM_ARCH
 	select ONESHOT
+	select ONESHOT_COUNT
 	select SERIAL_CONSOLE
 	select SERIAL_IFLOWCONTROL
 	select SCHED_HPWORK
@@ -223,23 +225,57 @@ config ARCH
 	default "sparc"   if ARCH_SPARC
 	default "tricore" if ARCH_TRICORE
 
+if ARCH_ARM
 source "arch/arm/Kconfig"
+endif
+if ARCH_ARM64
 source "arch/arm64/Kconfig"
+endif
+if ARCH_AVR
 source "arch/avr/Kconfig"
+endif
+if ARCH_HC
 source "arch/hc/Kconfig"
+endif
+if ARCH_MIPS
 source "arch/mips/Kconfig"
+endif
+if ARCH_MISOC
 source "arch/misoc/Kconfig"
+endif
+if ARCH_RENESAS
 source "arch/renesas/Kconfig"
+endif
+if ARCH_RISCV
 source "arch/risc-v/Kconfig"
+endif
+if ARCH_SIM
 source "arch/sim/Kconfig"
+endif
+if ARCH_X86
 source "arch/x86/Kconfig"
+endif
+if ARCH_X86_64
 source "arch/x86_64/Kconfig"
+endif
+if ARCH_XTENSA
 source "arch/xtensa/Kconfig"
+endif
+if ARCH_Z16
 source "arch/z16/Kconfig"
+endif
+if ARCH_Z80
 source "arch/z80/Kconfig"
+endif
+if ARCH_OR1K
 source "arch/or1k/Kconfig"
+endif
+if ARCH_SPARC
 source "arch/sparc/Kconfig"
+endif
+if ARCH_TRICORE
 source "arch/tricore/Kconfig"
+endif
 
 config ARCH_CHIP_CUSTOM
 	bool "Custom Chip Support"
@@ -281,6 +317,11 @@ source "$BINDIR/arch/dummy/Kconfig"
 
 config ARCH_TOOLCHAIN_GNU
 	bool
+	default n
+
+config ARCH_TOOLCHAIN_ARMCLANG
+	bool
+	select ARCH_TOOLCHAIN_GNU
 	default n
 
 config ARCH_TOOLCHAIN_CLANG
@@ -492,6 +533,23 @@ config ARCH_HAVE_RESET
 	bool
 	default n
 
+config ARCH_LDST_16BIT_NOT_ATOMIC
+	bool
+	default n
+	select ARCH_HAVE_8BIT_SERIAL_BUFSIZE
+	---help---
+	This configuration option denotes architecture incapable of loading
+	16-bit values atomically, ie. in a single instruction. If this is set,
+	it means that the architecture needs two (or more) instructions
+	to perform such load AND that a interrupt service routine may run
+	between their execution. The same applies for stores.
+
+	If set, any code running in non-interrupt context that reads 16-bit
+	variable that may be written in interrupt context must disable
+	interrupts or use another method that makes the read atomic.
+	(The same applies for non-interrupt context write and interrupt
+	context read.)
+
 config ARCH_HAVE_TESTSET
 	bool
 	default n
@@ -527,6 +585,10 @@ config ARCH_HAVE_BACKTRACE
 
 config ARCH_HAVE_DEBUG
 	bool "Architecture have debug support"
+	default n
+
+config ARCH_HAVE_MEMTAG
+	bool "Architecture have memory tagging support"
 	default n
 
 config ARCH_HAVE_PERF_EVENTS

@@ -200,7 +200,9 @@ reserved_syscall:
     mov    x0, sp
     adrp   x5, arm64_fatal_handler
     add    x5, x5, #:lo12:arm64_fatal_handler
-    br     x5
+    blr    x5
+    mov    sp, x0
+    b      arm64_exit_exception
 
 /****************************************************************************
  * Name: arm64_irq_handler
@@ -308,7 +310,7 @@ SECTION_FUNC(text, arm64_fiq_handler)
      * with interrupts disabled
      */
 
-    bl     arm64_decodeirq
+    bl     arm64_decodefiq
 
     mov    sp, x0
     b      arm64_exit_exception

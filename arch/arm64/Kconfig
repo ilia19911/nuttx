@@ -94,6 +94,7 @@ config ARCH_CHIP_IMX8
 config ARCH_CHIP_IMX9
 	bool "NXP i.MX9 Platform (ARMv8.2a)"
 	select ARCH_HAVE_ADDRENV
+	select ARCH_HAVE_ELF_EXECUTABLE
 	select ARCH_HAVE_I2CRESET
 	select ARCH_HAVE_IRQTRIGGER
 	select ARCH_NEED_ADDRENV_MAPPING
@@ -121,6 +122,7 @@ config ARCH_CHIP_BCM2711
 	select ARCH_HAVE_MULTICPU
 	select ARCH_USE_MMU # Required for up_testset
 	select ARMV8A_HAVE_GICv2
+	select ARCH_HAVE_SDIO
 	---help---
 		Broadcom BCM2711 quad-core ARM Cortex A72
 
@@ -185,6 +187,7 @@ menu "ARMv8.5 architectural features"
 
 config ARM64_MTE
 	bool "Memory Tagging Extension support"
+	select ARCH_HAVE_MEMTAG
 	select ARM64_TBI
 	default y
 
@@ -329,6 +332,7 @@ config ARCH_CORTEX_R82
 	bool
 	default n
 	select ARCH_ARMV8R
+	select ARCH_HAVE_TRUSTZONE
 	select ARCH_DCACHE
 	select ARCH_ICACHE
 	select ARCH_HAVE_MPU
@@ -342,6 +346,7 @@ config ARCH_CPU_UNKNOWN
 	default n
 	select ARCH_ARMV8A
 	select ARCH_HAVE_TRUSTZONE
+	select ARCH_HAVE_DEBUG
 	select ARCH_DCACHE
 	select ARCH_ICACHE
 	select ARCH_HAVE_MMU

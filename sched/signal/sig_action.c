@@ -62,11 +62,6 @@
 
 static spinlock_t g_sigaction_spin;
 
-#if CONFIG_SIG_PREALLOC_ACTIONS > 0
-static sigactq_t  g_sigactions[CONFIG_SIG_PREALLOC_ACTIONS];
-static bool       g_sigactions_used = false;
-#endif
-
 /****************************************************************************
  * Private Functions
  ****************************************************************************/
@@ -85,23 +80,6 @@ static void nxsig_alloc_actionblock(void)
   FAR sigactq_t *sigact;
   irqstate_t flags;
   int i;
-
-  /* Use pre-allocated instances only once */
-
-#if CONFIG_SIG_PREALLOC_ACTIONS > 0
-  flags = spin_lock_irqsave(&g_sigaction_spin);
-  if (!g_sigactions_used)
-    {
-      for (i = 0; i < CONFIG_SIG_PREALLOC_ACTIONS; i++)
-        {
-          sq_addlast((FAR sq_entry_t *)(g_sigactions + i), &g_sigfreeaction);
-        }
-
-      g_sigactions_used = true;
-    }
-
-  spin_unlock_irqrestore(&g_sigaction_spin, flags);
-#endif
 
   /* Allocate a block of signal actions */
 
@@ -294,6 +272,7 @@ int nxsig_action(int signo, FAR const struct sigaction *act,
           oact->sa_handler = sigact->act.sa_handler;
           oact->sa_mask    = sigact->act.sa_mask;
           oact->sa_flags   = sigact->act.sa_flags;
+          oact->sa_user    = sigact->act.sa_user;
         }
       else
         {

@@ -13,19 +13,6 @@ cmpconfig.c
 This C file can be used to build a utility for comparing two NuttX
 configuration files.
 
-Config.mk
----------
-
-Config.mk contains common definitions used by many configuration files.
-This file (along with <nuttx>/.config) must be included at the top of
-each configuration-specific Make.defs file like::
-
-    include $(TOPDIR)/.config
-    include $(TOPDIR)/tools/Config.mk
-
-Subsequent logic within the configuration-specific Make.defs file may then
-override these default definitions as necessary.
-
 checkpatch.sh
 -------------
 
@@ -740,6 +727,8 @@ these problems::
      -   option env="APPSDIR"
      +   default "../apps"
 
+.. _build_system_linking:
+
 link.sh, link.bat, copydir.sh, copydir.bat, unlink.sh, and unlink.bat
 ---------------------------------------------------------------------
 
@@ -780,6 +769,8 @@ this case.  link.bat will attempt to create a symbolic link using the
 NTFS mklink.exe command instead of copying files.  That logic, however,
 has not been verified as of this writing.
 
+.. _makefile_host:
+
 Makefile.host
 -------------
 
@@ -800,6 +791,8 @@ may be mounted under /etc in the NuttX pseudo file system.
 
 TIP: Edit the resulting header file and mark the generated data values
 as 'const' so that they will be stored in FLASH.
+
+.. _mkdeps:
 
 mkdeps.c, cnvwindeps.c, mkwindeps.sh, and mknulldeps.sh
 -------------------------------------------------------
@@ -877,7 +870,7 @@ Help is also available::
     $ tools/refresh.sh --help
     tools/refresh.sh is a tool for refreshing board configurations
 
-USAGE: ``./refresh.sh [options] <board>/<config>+``
+USAGE: ``./refresh.sh [options] <arch>|<chip>|<board>:<config>+``
 
 Where [options] include::
 
@@ -929,6 +922,28 @@ The steps to refresh the file taken by refresh.sh are:
    option, this file copy will occur automatically.  Otherwise,
    refresh.sh will prompt you first to avoid overwriting the
    defconfig file with changes that you may not want.
+
+Usage examples:
+
+Update all boards without verbose output::
+
+       $ ./tools/refresh.sh --silent --defaults all
+
+Update all boards and configs from `arm` architecture::
+
+       $ ./tools/refresh.sh --silent arch:arm
+
+Update all boards from `stm32f7` chip family::
+
+       $ ./tools/refresh.sh --silent chip:stm32f7
+
+Update all configs from `stm32f103-minimum` board::
+
+       $ ./tools/refresh.sh --silent board:stm32f103-minimum
+
+Update only the `nsh` config from stm32f103-minimum board::
+
+       $ ./tools/refresh.sh --silent stm32f103-minimum:nsh
 
 rmcr.c
 ------

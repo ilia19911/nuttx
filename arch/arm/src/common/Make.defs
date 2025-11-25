@@ -30,12 +30,6 @@ CMN_CSRCS += arm_nputs.c arm_releasestack.c arm_registerdump.c
 CMN_CSRCS += arm_stackframe.c arm_modifyreg.c
 CMN_CSRCS += arm_usestack.c arm_fork.c arm_poweroff.c
 
-ifneq ($(CONFIG_ALARM_ARCH),y)
-  ifneq ($(CONFIG_TIMER_ARCH),y)
-    CMN_CSRCS += arm_mdelay.c arm_udelay.c
-  endif
-endif
-
 ifeq ($(CONFIG_STACK_COLORATION),y)
   CMN_CSRCS += arm_checkstack.c
 endif
@@ -80,8 +74,4 @@ CMN_ASRCS += fork.S
 
 ifeq ($(CONFIG_ARCH_HAVE_FETCHADD),y)
   CMN_ASRCS += arm_fetchadd.S
-endif
-
-ifeq ($(CONFIG_ARCH_TOOLCHAIN_GHS),y)
-  CMN_CSRCS += ghs/lib_dummy.c
 endif

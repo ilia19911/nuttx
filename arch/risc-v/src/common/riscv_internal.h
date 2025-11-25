@@ -168,6 +168,13 @@ static inline void putreg64(uint64_t v, const volatile uintreg_t a)
 
 #endif
 
+/* Non-atomic, but more effective modification of registers */
+
+#define modreg8(v,m,a)  putreg8((getreg8(a) & ~(m)) | ((v) & (m)), (a))
+#define modreg16(v,m,a) putreg16((getreg16(a) & ~(m)) | ((v) & (m)), (a))
+#define modreg32(v,m,a) putreg32((getreg32(a) & ~(m)) | ((v) & (m)), (a))
+#define modreg64(v,m,a) putreg64((getreg64(a) & ~(m)) | ((v) & (m)), (a))
+
 /****************************************************************************
  * Public Types
  ****************************************************************************/
@@ -355,6 +362,13 @@ int riscv_misaligned(int irq, void *context, void *arg);
 #ifdef CONFIG_STACK_COLORATION
 size_t riscv_stack_check(uintptr_t alloc, size_t size);
 void riscv_stack_color(void *stackbase, size_t nbytes);
+#endif
+
+#if defined(CONFIG_STACK_COLORATION) && \
+    defined(CONFIG_ARCH_INTERRUPTSTACK) && CONFIG_ARCH_INTERRUPTSTACK > 15
+void riscv_color_intstack(void);
+#else
+#  define riscv_color_intstack()
 #endif
 
 #ifdef CONFIG_SMP

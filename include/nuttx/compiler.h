@@ -198,6 +198,13 @@
 
 #  define noreturn_function __attribute__((noreturn))
 
+/* The pure function attribute informs the compiler that
+ * the function is pure or const.
+ */
+
+#  define pure_function  __attribute__((pure))
+#  define const_function __attribute__((const))
+
 /* The farcall_function attribute informs GCC that is should use long calls
  * (even though -mlong-calls does not appear in the compilation options)
  */
@@ -212,6 +219,25 @@
 
 #  define predict_true(x)  __builtin_expect(!!(x), 1)
 #  define predict_false(x) __builtin_expect(!!(x), 0)
+
+/* `x` can be evaluated at compile time */
+
+#  define is_constexpr(x) __builtin_constant_p(x)
+
+/* Assume the condition is satisfied.
+ * We can use this to perform more aggressive compiler optimizations.
+ * Please use this with caution, as it may cause runtime errors if you fail
+ * to ensure that the condition is satisfied.
+ */
+
+#  if defined(__clang__)
+#    define compiler_assume(x) __builtin_assume(x)
+#  elif __GNUC__ >= 13 /* The assume(x) is supported since GCC 13. */
+#    define compiler_assume(x) __attribute__((assume(x)))
+#  else
+#    define compiler_assume(x) \
+     do { if (!(x)) { __builtin_unreachable(); } } while(0)
+#  endif
 
 /* Code locate */
 
@@ -249,10 +275,19 @@
 /* The always_inline_function attribute informs GCC that the function should
  * always be inlined, regardless of the level of optimization.  The
  * noinline_function indicates that the function should never be inlined.
+ * Note that if the compiler optimization is disabled, the stack-usage of
+ * the inline functions will not be optimized. In this case, force inlining
+ * can lead to stack-overflow.
  */
 
-#  define always_inline_function __attribute__((always_inline,no_instrument_function)) inline
-#  define inline_function __attribute__((always_inline)) inline
+#  ifdef CONFIG_DEBUG_NOOPT
+#    define always_inline_function inline
+#    define inline_function inline
+#  else
+#    define always_inline_function __attribute__((always_inline,no_instrument_function)) inline
+#    define inline_function __attribute__((always_inline)) inline
+#  endif
+
 #  define noinline_function __attribute__((noinline))
 
 /* The noinstrument_function attribute informs GCC don't instrument it */
@@ -268,7 +303,7 @@
 
 /* The nooptimiziation_function attribute no optimize */
 
-#  if defined(__clang__)
+#  if defined(__clang__) || defined(CONFIG_TRICORE_TOOLCHAIN_GNU)
 #    define nooptimiziation_function __attribute__((optnone))
 #  else
 #    define nooptimiziation_function __attribute__((optimize("O0")))
@@ -576,7 +611,9 @@
 
 /* Indicate that a local variable is not used */
 
-#  define UNUSED(a) ((void)(1 || &(a)))
+#  ifndef UNUSED
+#    define UNUSED(a) ((void)(1 || &(a)))
+#  endif
 
 #  if defined(__clang__)
 #    define no_builtin(n) __attribute__((no_builtin(n)))
@@ -643,8 +680,12 @@
  */
 
 #  define noreturn_function
+#  define pure_function
+#  define const_function
 #  define predict_true(x) (x)
 #  define predict_false(x) (x)
+#  define is_constexpr(x)  (0)
+#  define compiler_assume(x)
 #  define locate_code(n)
 #  define aligned_data(n)
 #  define locate_data(n)
@@ -708,7 +749,9 @@
 
 /* Indicate that a local variable is not used */
 
-#  define UNUSED(a) ((void)(1 || &(a)))
+#  ifndef UNUSED
+#    define UNUSED(a) ((void)(1 || &(a)))
+#  endif
 
 /* It is assumed that the system is build using the small
  * data model with storage defaulting to internal RAM.
@@ -810,8 +853,12 @@
  */
 
 #  define noreturn_function
+#  define pure_function
+#  define const_function
 #  define predict_true(x) (x)
 #  define predict_false(x) (x)
+#  define is_constexpr(x)  (0)
+#  define compiler_assume(x)
 #  define aligned_data(n)
 #  define locate_code(n)
 #  define locate_data(n)
@@ -901,7 +948,9 @@
 
 /* Indicate that a local variable is not used */
 
-#  define UNUSED(a) ((void)(1 || &(a)))
+#  ifndef UNUSED
+#    define UNUSED(a) ((void)(1 || &(a)))
+#  endif
 
 /* Older Zilog compilers support both types double and long long, but the
  * size is 32-bits (same as long and single precision) so it is safer to say
@@ -933,8 +982,12 @@
 #  define weak_const_function
 #  define noreturn_function
 #  define farcall_function
+#  define pure_function
+#  define const_function
 #  define predict_true(x) (x)
 #  define predict_false(x) (x)
+#  define is_constexpr(x)  (0)
+#  define compiler_assume(x)
 #  define locate_code(n)
 #  define aligned_data(n)
 #  define locate_data(n)
@@ -992,7 +1045,9 @@
 
 /* Indicate that a local variable is not used */
 
-#  define UNUSED(a) ((void)(1 || &(a)))
+#  ifndef UNUSED
+#    define UNUSED(a) ((void)(1 || &(a)))
+#  endif
 
 #  define CONFIG_CPP_HAVE_VARARGS 1 /* Supports variable argument macros */
 #  define CONFIG_HAVE_FILENAME 1    /* Has __FILE__ */
@@ -1036,8 +1091,12 @@
 #  define restrict
 #  define noreturn_function
 #  define farcall_function
+#  define pure_function
+#  define const_function
 #  define predict_true(x) (x)
 #  define predict_false(x) (x)
+#  define is_constexpr(x)  (0)
+#  define compiler_assume(x) __assume(x)
 #  define aligned_data(n)
 #  define locate_code(n)
 #  define locate_data(n)
@@ -1088,7 +1147,9 @@
 #  undef  CONFIG_LONG_IS_NOT_INT
 #  undef  CONFIG_PTR_IS_NOT_INT
 
-#  define UNUSED(a) ((void)(1 || &(a)))
+#  ifndef UNUSED
+#    define UNUSED(a) ((void)(1 || &(a)))
+#  endif
 
 #  define offsetof(a, b) ((size_t)(&(((a *)(0))->b)))
 #  define return_address(x) 0
@@ -1128,8 +1189,12 @@
 #  define restrict
 #  define noreturn_function
 #  define farcall_function              __attribute__((long_call))
+#  define pure_function
+#  define const_function
 #  define predict_true(x) (x)
 #  define predict_false(x) (x)
+#  define is_constexpr(x)  (0)
+#  define compiler_assume(x)
 #  define aligned_data(n)               __attribute__((aligned(n)))
 #  define locate_code(n)                __attribute__((section(n)))
 #  define locate_data(n)                __attribute__((section(n)))
@@ -1179,7 +1244,9 @@
 #  undef  CONFIG_LONG_IS_NOT_INT
 #  undef  CONFIG_PTR_IS_NOT_INT
 
-#  define UNUSED(a) ((void)(1 || &(a)))
+#  ifndef UNUSED
+#    define UNUSED(a) ((void)(1 || &(a)))
+#  endif
 
 #  define offsetof(a, b) ((size_t)(&(((a *)(0))->b)))
 #  define return_address(x) 0
@@ -1206,8 +1273,12 @@
 #  define restrict
 #  define noreturn_function
 #  define farcall_function
+#  define pure_function
+#  define const_function
 #  define predict_true(x) (x)
 #  define predict_false(x) (x)
+#  define is_constexpr(x)  (0)
+#  define compiler_assume(x)
 #  define aligned_data(n)
 #  define locate_code(n)
 #  define locate_data(n)
@@ -1261,7 +1332,9 @@
 #  undef  CONFIG_HAVE_DOUBLE
 #  undef  CONFIG_HAVE_LONG_DOUBLE
 
-#  define UNUSED(a) ((void)(1 || &(a)))
+#  ifndef UNUSED
+#    define UNUSED(a) ((void)(1 || &(a)))
+#  endif
 
 #  define offsetof(a, b) ((size_t)(&(((a *)(0))->b)))
 #  define return_address(x) 0

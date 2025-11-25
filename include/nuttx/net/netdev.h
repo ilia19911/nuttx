@@ -2,7 +2,8 @@
  * include/nuttx/net/netdev.h
  *
  * SPDX-License-Identifier: BSD-3-Clause
- * SPDX-FileCopyrightText: 2007, 2009, 2011-2018 Gregory Nutt. All rights reserved.
+ * SPDX-FileCopyrightText: 2007,2009 Gregory Nutt. All rights reserved.
+ * SPDX-FileCopyrightText: 2011-2018 Gregory Nutt. All rights reserved.
  * SPDX-FileCopyrightText: 2001-2003, Adam Dunkels. All rights reserved.
  * SPDX-FileContributor: Gregory Nutt <gnutt@nuttx.org>
  *
@@ -216,6 +217,17 @@
      (netdev_ipv6_lookup(dev, addr, true) != NULL)
 #endif
 
+/* MDIO Manageable Device (MMD) support with SIOCxMIIREG ioctl commands */
+
+#define mdio_phy_id_is_c45(phy_id) \
+    (((phy_id) & MDIO_PHY_ID_C45) && !((phy_id) & ~MDIO_PHY_ID_C45_MASK))
+
+#define mdio_phy_id_prtad(phy_id) \
+    ((uint16_t)(((phy_id) & MDIO_PHY_ID_PRTAD) >> 5))
+
+#define mdio_phy_id_devad(phy_id) \
+    ((uint16_t)((phy_id) & MDIO_PHY_ID_DEVAD))
+
 /****************************************************************************
  * Public Types
  ****************************************************************************/
@@ -415,7 +427,7 @@ struct net_driver_s
   /* Remember the outgoing fragments waiting to be sent */
 
 #ifdef CONFIG_NET_IPFRAG
-  FAR struct iob_queue_s d_fragout;
+  struct iob_queue_s d_fragout;
 #endif
 
   /* The d_buf array is used to hold incoming and outgoing packets. The

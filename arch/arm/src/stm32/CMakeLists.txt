@@ -35,7 +35,6 @@ list(
   stm32_flash.c
   stm32_irq.c
   stm32_lowputc.c
-  stm32_serial.c
   stm32_spi.c
   stm32_i2s.c
   stm32_sdio.c
@@ -45,6 +44,10 @@ list(
   stm32_uid.c
   stm32_capture.c
   stm32_dfumode.c)
+
+if(CONFIG_STM32_USART)
+  list(APPEND SRCS stm32_serial.c)
+endif()
 
 if(CONFIG_STM32_DMA)
   list(APPEND SRCS stm32_dma.c)
@@ -82,6 +85,9 @@ if(CONFIG_STM32_HAVE_IP_I2C_V1)
   endif()
 elseif(CONFIG_STM32_HAVE_IP_I2C_V2)
   list(APPEND SRCS stm32_i2c_v2.c)
+  if(CONFIG_STM32_I2C_SLAVE)
+    list(APPEND SRCS stm32_i2cslave_v2.c)
+  endif()
 endif()
 
 if(CONFIG_USBDEV)

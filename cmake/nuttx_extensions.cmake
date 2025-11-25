@@ -112,12 +112,38 @@ endfunction()
 function(nuttx_wildcard_sources)
   cmake_parse_arguments(ARGS "" "" EXCLUDE ${ARGN})
 
-  file(GLOB SRCS ${ARGN})
+  # `SRCS` just collect all source files instead of EXCLUDE arguments
+  file(GLOB SRCS ${ARGS_UNPARSED_ARGUMENTS})
   if(ARGS_EXCLUDE)
     file(GLOB RM_SRCS ${ARGS_EXCLUDE})
     list(REMOVE_ITEM SRCS ${RM_SRCS})
   endif()
   nuttx_sources(${SRCS})
+endfunction()
+
+# Function: nuttx_wildcard_sources_ifdef
+#
+# Conditionally adds source files matching a wildcard pattern to the current
+# library target if the given condition is true.
+#
+# Usage: nuttx_wildcard_sources_ifdef(MY_CONDITION "*.c" EXCLUDE "exclude_me.c")
+function(nuttx_wildcard_sources_ifdef cond)
+  if(${cond})
+    nuttx_wildcard_sources(${ARGN})
+  endif()
+endfunction()
+
+# Function: nuttx_wildcard_sources_ifndef
+#
+# Conditionally adds source files matching a wildcard pattern to the current
+# library target if the given condition is false.
+#
+# Usage: nuttx_wildcard_sources_ifndef(MY_CONDITION "*.c" EXCLUDE
+# "exclude_me.c")
+function(nuttx_wildcard_sources_ifndef cond)
+  if(NOT ${cond})
+    nuttx_wildcard_sources(${ARGN})
+  endif()
 endfunction()
 
 # Function: nuttx_include_directories

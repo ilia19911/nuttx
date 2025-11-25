@@ -55,6 +55,7 @@
 #include "soc/rmt_periph.h"
 #include "soc/soc_caps.h"
 #include "esp_clk_tree.h"
+#include "esp_private/esp_clk_tree_common.h"
 
 #include "esp_rmt.h"
 
@@ -115,6 +116,18 @@
           .filter_en = true,                      \
       }                                           \
   }
+
+#if SOC_PERIPH_CLK_CTRL_SHARED
+#define RMT_CLOCK_SRC_ATOMIC() PERIPH_RCC_ATOMIC()
+#else
+#define RMT_CLOCK_SRC_ATOMIC()
+#endif
+
+#if !SOC_RCC_IS_INDEPENDENT
+#define RMT_RCC_ATOMIC() PERIPH_RCC_ATOMIC()
+#else
+#define RMT_RCC_ATOMIC()
+#endif
 
 #define rmt_item32_t rmt_symbol_word_t
 
@@ -409,8 +422,13 @@ static void rmt_module_enable(void)
 
   if (g_rmtdev_common.rmt_module_enabled == false)
     {
-      periph_module_reset(rmt_periph_signals.groups[0].module);
-      periph_module_enable(rmt_periph_signals.groups[0].module);
+      RMT_RCC_ATOMIC()
+        {
+          rmt_ll_enable_bus_clock(0, true);
+          rmt_ll_reset_register(0);
+        }
+
+      rmt_ll_mem_power_by_pmu(g_rmtdev_common.hal.regs);
       g_rmtdev_common.rmt_module_enabled = true;
     }
 
@@ -786,6 +804,7 @@ static int rmt_internal_config(rmt_dev_t *dev,
   bool carrier_en = rmt_param->tx_config.carrier_en;
   uint32_t rmt_source_clk_hz;
   irqstate_t flags;
+  int ret = OK;
 
   if (!rmt_is_channel_number_valid(channel, mode))
     {
@@ -816,9 +835,21 @@ static int rmt_internal_config(rmt_dev_t *dev,
       esp_clk_tree_src_get_freq_hz((soc_module_clk_t)RMT_BASECLK_XTAL,
                                    ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED,
                                    &rmt_source_clk_hz);
-      rmt_ll_set_group_clock_src(dev, channel,
-                                 (rmt_clock_source_t)RMT_BASECLK_XTAL,
-                                 1, 0, 0);
+      ret = esp_clk_tree_enable_src((soc_module_clk_t)RMT_BASECLK_XTAL,
+                                    true);
+      if (ret != ESP_OK)
+        {
+          rmterr("Failed to enable XTAL clock source: %d", ret);
+          return -EPERM;
+        }
+
+      RMT_CLOCK_SRC_ATOMIC()
+        {
+          rmt_ll_set_group_clock_src(dev, channel,
+                                     (rmt_clock_source_t)RMT_BASECLK_XTAL,
+                                     1, 0, 0);
+        }
+
 #elif SOC_RMT_SUPPORT_REF_TICK
 
       /* clock src: REF_CLK */
@@ -826,9 +857,12 @@ static int rmt_internal_config(rmt_dev_t *dev,
       esp_clk_tree_src_get_freq_hz((soc_module_clk_t)RMT_BASECLK_REF,
                                    ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED,
                                    &rmt_source_clk_hz);
-      rmt_ll_set_group_clock_src(dev, channel,
-                                 (rmt_clock_source_t)RMT_BASECLK_REF,
-                                 1, 0, 0);
+      RMT_CLOCK_SRC_ATOMIC()
+        {
+          rmt_ll_set_group_clock_src(dev, channel,
+                                     (rmt_clock_source_t)RMT_BASECLK_REF,
+                                     1, 0, 0);
+        }
 #else
 #error "No clock source is aware of DFS"
 #endif
@@ -840,9 +874,25 @@ static int rmt_internal_config(rmt_dev_t *dev,
       esp_clk_tree_src_get_freq_hz((soc_module_clk_t)RMT_BASECLK_DEFAULT,
                                    ESP_CLK_TREE_SRC_FREQ_PRECISION_CACHED,
                                    &rmt_source_clk_hz);
-      rmt_ll_set_group_clock_src(dev, channel,
-                                 (rmt_clock_source_t)RMT_BASECLK_DEFAULT,
-                                 1, 0, 0);
+      ret = esp_clk_tree_enable_src((soc_module_clk_t)RMT_BASECLK_DEFAULT,
+                                    true);
+      if (ret != ESP_OK)
+        {
+          rmterr("Failed to enable XTAL clock source: %d", ret);
+          return -EPERM;
+        }
+
+      RMT_CLOCK_SRC_ATOMIC()
+        {
+          rmt_ll_set_group_clock_src(dev, channel,
+                                     (rmt_clock_source_t)RMT_BASECLK_DEFAULT,
+                                    1, 0, 0);
+        }
+    }
+
+  RMT_CLOCK_SRC_ATOMIC()
+    {
+      rmt_ll_enable_group_clock(dev, true);
     }
 
   spin_unlock_irqrestore(&g_rmtdev_common.rmt_spinlock, flags);
@@ -983,7 +1033,7 @@ static int rmt_internal_config(rmt_dev_t *dev,
               threshold, filter_cnt);
     }
 
-  return OK;
+  return ret;
 }
 
 /****************************************************************************
@@ -1238,6 +1288,10 @@ static int IRAM_ATTR rmt_driver_isr_default(int irq, void *context,
               if (item_len > p_rmt->rx_item_start_idx)
                 {
                   item_len = item_len - p_rmt->rx_item_start_idx;
+                }
+              else
+                {
+                  item_len = p_rmt->rx_item_start_idx - item_len;
                 }
 
               /* Check for RX buffer max length */
@@ -1853,12 +1907,16 @@ static struct rmt_dev_s
 
       if (g_rx_channel != RMT_CHANNEL_MAX && g_tx_channel != RMT_CHANNEL_MAX)
         {
+          uint32_t tx_sig =
+            rmt_periph_signals.groups[0].channels[g_tx_channel].tx_sig;
+          uint32_t rx_sig =
+            rmt_periph_signals.groups[0].channels[g_rx_channel].rx_sig;
           esp_configgpio(config.gpio_num, OUTPUT | INPUT);
           esp_gpio_matrix_out(config.gpio_num,
-                              RMT_SIG_OUT0_IDX + g_tx_channel,
+                              tx_sig,
                               0, 0);
           esp_gpio_matrix_in(config.gpio_num,
-                             RMT_SIG_IN0_IDX + g_rx_channel,
+                             rx_sig,
                              0);
           rmtwarn("RX channel %d and TX channel %d are used in loop test "
                   "mode\n", g_rx_channel, g_tx_channel);

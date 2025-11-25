@@ -107,6 +107,12 @@
 #define sim_savestate(regs) sim_copyfullstate(regs, up_current_regs())
 #define sim_restorestate(regs) up_set_current_regs(regs)
 
+/* Provide a common interface, which should have different conversions
+ * on different platforms.
+ */
+
+#define host_errno_convert(errcode) (errcode)
+
 #define sim_saveusercontext(saveregs, ret)                      \
     do                                                          \
       {                                                         \
@@ -134,8 +140,6 @@
 
 #define host_uninterruptible(func, ...)                         \
     ({                                                          \
-        extern uint64_t up_irq_save(void);                      \
-        extern void up_irq_restore(uint64_t flags);             \
         uint64_t flags_ = up_irq_save();                        \
         typeof(func(__VA_ARGS__)) ret_ = func(__VA_ARGS__);     \
         up_irq_restore(flags_);                                 \
@@ -145,13 +149,23 @@
 #define host_uninterruptible_no_return(func, ...)               \
     do                                                          \
       {                                                         \
-        extern uint64_t up_irq_save(void);                      \
-        extern void up_irq_restore(uint64_t flags);             \
         uint64_t flags_ = up_irq_save();                        \
         func(__VA_ARGS__);                                      \
         up_irq_restore(flags_);                                 \
       }                                                         \
     while (0)
+
+#define host_uninterruptible_errno(func, ...)                   \
+    ({                                                          \
+        uint64_t flags_ = up_irq_save();                        \
+        typeof(func(__VA_ARGS__)) ret_ = func(__VA_ARGS__);     \
+        if (ret_ < 0)                                           \
+          {                                                     \
+            ret_ = host_errno_convert(-errno);                  \
+          }                                                     \
+        up_irq_restore(flags_);                                 \
+        ret_;                                                   \
+    })
 
 /* File System Definitions **************************************************/
 
@@ -204,6 +218,9 @@ extern char **g_argv;
  * Public Function Prototypes
  ****************************************************************************/
 
+uint64_t up_irq_save(void);
+void up_irq_restore(uint64_t flags);
+
 /* Context switching */
 
 void sim_copyfullstate(xcpt_reg_t *dest, xcpt_reg_t *src);
@@ -239,6 +256,7 @@ int host_unlinkshmem(const char *name);
 
 /* sim_hosttime.c ***********************************************************/
 
+int host_inittimer(void);
 uint64_t host_gettime(bool rtc);
 void host_sleep(uint64_t nsec);
 void host_sleepuntil(uint64_t nsec);

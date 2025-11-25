@@ -236,10 +236,10 @@ void xtensa_window_spill(void);
 
 /* IRQs */
 
-uint32_t *xtensa_int_decode(uint32_t cpuints, uint32_t *regs);
+uint32_t *xtensa_int_decode(uint32_t *cpuints, uint32_t *regs);
 uint32_t *xtensa_irq_dispatch(int irq, uint32_t *regs);
-uint32_t xtensa_enable_cpuint(uint32_t *shadow, uint32_t intmask);
-uint32_t xtensa_disable_cpuint(uint32_t *shadow, uint32_t intmask);
+void xtensa_enable_cpuint(uint32_t *shadow, uint32_t intnum);
+void xtensa_disable_cpuint(uint32_t *shadow, uint32_t intnum);
 void xtensa_panic(int xptcode, uint32_t *regs) noreturn_function;
 void xtensa_user_panic(int exccause, uint32_t *regs) noreturn_function;
 uint32_t *xtensa_user(int exccause, uint32_t *regs);
@@ -332,6 +332,13 @@ int xtensa_swint(int irq, void *context, void *arg);
 #ifdef CONFIG_STACK_COLORATION
 size_t xtensa_stack_check(uintptr_t alloc, size_t size);
 void xtensa_stack_color(void *stackbase, size_t nbytes);
+#endif
+
+#if defined(CONFIG_STACK_COLORATION) && \
+    defined(CONFIG_ARCH_INTERRUPTSTACK) && CONFIG_ARCH_INTERRUPTSTACK > 15
+void xtensa_color_intstack(void);
+#else
+#  define xtensa_color_intstack()
 #endif
 
 #endif /* __ASSEMBLY__ */

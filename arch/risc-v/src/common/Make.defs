@@ -27,7 +27,7 @@ CMN_ASRCS += riscv_vectors.S riscv_exception_common.S
 CMN_ASRCS += riscv_saveusercontext.S
 
 # Specify C code within the common directory to be included
-CMN_CSRCS += riscv_initialize.c riscv_swint.c riscv_mtimer.c
+CMN_CSRCS += riscv_initialize.c riscv_swint.c
 CMN_CSRCS += riscv_allocateheap.c riscv_createstack.c riscv_cpuinfo.c
 CMN_CSRCS += riscv_cpuidlestack.c riscv_doirq.c riscv_exit.c riscv_exception.c
 CMN_CSRCS += riscv_getnewintctx.c riscv_getintstack.c riscv_initialstate.c
@@ -36,14 +36,12 @@ CMN_CSRCS += riscv_registerdump.c riscv_stackframe.c riscv_schedulesigaction.c
 CMN_CSRCS += riscv_sigdeliver.c riscv_switchcontext.c
 CMN_CSRCS += riscv_usestack.c riscv_tcbinfo.c
 
-ifneq ($(CONFIG_ARCH_IDLE_CUSTOM),y)
-  CMN_CSRCS += riscv_idle.c
+ifeq ($(CONFIG_ONESHOT),y)
+  CMN_CSRCS += riscv_mtimer.c
 endif
 
-ifneq ($(CONFIG_ALARM_ARCH),y)
-  ifneq ($(CONFIG_TIMER_ARCH),y)
-    CMN_CSRCS += riscv_mdelay.c riscv_udelay.c
-  endif
+ifneq ($(CONFIG_ARCH_IDLE_CUSTOM),y)
+  CMN_CSRCS += riscv_idle.c
 endif
 
 ifeq ($(CONFIG_SMP),y)
