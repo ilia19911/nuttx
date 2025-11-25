@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/arm/src/stm32h7/stm32_flash.c
+ * boards/arm/stm32h7/nucleo-h723zg/src/stm32_pca9635.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -26,20 +26,59 @@
 
 #include <nuttx/config.h>
 
-#if defined(CONFIG_STM32H7_STM32H7X0XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7X3XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7B3XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7X5XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7X7XX)
-#  include "stm32h7x3xx_flash.c"
-#else
-#  error "Unsupported STM32 H7 chip"
-#endif
+#include <stdbool.h>
+#include <stdio.h>
+#include <debug.h>
+#include <errno.h>
+
+#include <nuttx/i2c/i2c_master.h>
+#include <nuttx/leds/pca9635pw.h>
+
+#include <arch/irq.h>
+
+#include "stm32.h"
+#include "nucleo-h723zg.h"
 
 /****************************************************************************
- * Private Functions
+ * Public Functions
  ****************************************************************************/
+
+/****************************************************************************
+ * Name: stm32_pca9635_initialize
+ *
+ * Description:
+ *   This function is called by board initialization logic to configure the
+ *   LED PWM chip.  This function will register the driver as /dev/leddrv0.
+ *
+ * Input Parameters:
+ *   None
+ *
+ * Returned Value:
+ *   Zero is returned on success.  Otherwise, a negated errno value is
+ *   returned to indicate the nature of the failure.
+ *
+ ****************************************************************************/
+
+int stm32_pca9635_initialize(void)
+{
+  struct i2c_master_s *i2c;
+  int ret;
+
+  /* Get the I2C driver that interfaces with the pca9635 */
+
+  i2c = stm32_i2cbus_initialize(PCA9635_I2CBUS);
+  if (!i2c)
+    {
+      i2cerr("ERROR: Failed to initialize I2C%d\n", PCA9635_I2CBUS);
+      return -1;
+    }
+
+  ret = pca9635pw_register("/dev/leddrv0", i2c, PCA9635_I2CADDR);
+  if (ret < 0)
+    {
+      snerr("ERROR: Failed to register PCA9635 driver: %d\n", ret);
+      return ret;
+    }
+
+  return OK;
+}

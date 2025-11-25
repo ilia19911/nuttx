@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/arm/src/stm32h7/stm32_flash.c
+ * boards/arm/stm32h7/nucleo-h723zg/scripts/memory.ld
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -20,26 +20,32 @@
  *
  ****************************************************************************/
 
-/****************************************************************************
- * Included Files
- ****************************************************************************/
+/* TODO: Add description for memory organisation */
 
-#include <nuttx/config.h>
+MEMORY
+{
+  /* ITCM boot address */
 
-#if defined(CONFIG_STM32H7_STM32H7X0XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7X3XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7B3XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7X5XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7X7XX)
-#  include "stm32h7x3xx_flash.c"
-#else
-#  error "Unsupported STM32 H7 chip"
-#endif
+  itcm  (rwx) : ORIGIN = 0x00000000, LENGTH = 64K
 
-/****************************************************************************
- * Private Functions
- ****************************************************************************/
+  /* 1024Kb FLASH */
+
+  xflash (rx) : ORIGIN = 0x08000000, LENGTH = 1024K
+
+  /* 48Kb SRAM 1 2 3 */
+
+  ksram (rwx) : ORIGIN = 0x30000000, LENGTH = 16K
+  usram (rwx) : ORIGIN = 0x30004000, LENGTH = 16K
+
+  /* 512Kb of contiguous AXI SRAM */
+
+  sram (rwx)  : ORIGIN = 0x24000000, LENGTH = 512K
+
+  /* DTCM SRAM */
+
+  dtcm1 (rwx) : ORIGIN = 0x20000000, LENGTH = 64K
+  dtcm2 (rwx) : ORIGIN = 0x20010000, LENGTH = 64K
+
+  sram4 (rwx) : ORIGIN = 0x38000000, LENGTH = 64K
+  bbram (rwx) : ORIGIN = 0x38800000, LENGTH = 4K
+}

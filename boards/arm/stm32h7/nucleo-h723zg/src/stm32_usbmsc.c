@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/arm/src/stm32h7/stm32_flash.c
+ * boards/arm/stm32h7/nucleo-h723zg/src/stm32_usbmsc.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -26,20 +26,36 @@
 
 #include <nuttx/config.h>
 
-#if defined(CONFIG_STM32H7_STM32H7X0XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7X3XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7B3XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7X5XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7X7XX)
-#  include "stm32h7x3xx_flash.c"
-#else
-#  error "Unsupported STM32 H7 chip"
-#endif
+#include <stdio.h>
+#include <syslog.h>
+#include <errno.h>
+
+#include <nuttx/board.h>
 
 /****************************************************************************
- * Private Functions
+ * Public Functions
  ****************************************************************************/
+
+/****************************************************************************
+ * Name: board_usbmsc_initialize
+ *
+ * Description:
+ *   Perform architecture specific initialization as needed to establish
+ *   the mass storage device that will be exported by the USB MSC device.
+ *
+ ****************************************************************************/
+
+int board_usbmsc_initialize(int port)
+{
+  /* If system/usbmsc is built as an NSH command, then SD slot should
+   * already have been initialized in board_app_initialize()
+   * (see stm32_appinit.c).
+   * In this case, there is nothing further to be done here.
+   */
+
+#ifndef CONFIG_NSH_BUILTIN_APPS
+  stm32_mmcsd_initialize(0);
+#else
+  return OK;
+#endif
+}

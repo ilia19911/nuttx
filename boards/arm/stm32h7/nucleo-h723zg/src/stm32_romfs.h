@@ -1,5 +1,5 @@
 /****************************************************************************
- * arch/arm/src/stm32h7/stm32_flash.c
+ * boards/arm/stm32h7/nucleo-h723zg/src/stm32_romfs.h
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -20,26 +20,44 @@
  *
  ****************************************************************************/
 
+#ifndef __BOARDS_ARM_STM32H7_NUCLEO_H723ZG_SRC_STM32_ROMFS_H
+#define __BOARDS_ARM_STM32H7_NUCLEO_H723ZG_SRC_STM32_ROMFS_H
+
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
 #include <nuttx/config.h>
 
-#if defined(CONFIG_STM32H7_STM32H7X0XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7X3XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7B3XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7X5XX)
-#  include "stm32h7x3xx_flash.c"
-#elif defined(CONFIG_STM32H7_STM32H7X7XX)
-#  include "stm32h7x3xx_flash.c"
-#else
-#  error "Unsupported STM32 H7 chip"
-#endif
+#ifdef CONFIG_STM32_ROMFS
 
 /****************************************************************************
- * Private Functions
+ * Pre-processor Definitions
  ****************************************************************************/
+
+#define ROMFS_SECTOR_SIZE 64
+
+/****************************************************************************
+ * Public Function Prototypes
+ ****************************************************************************/
+
+/****************************************************************************
+ * Name: stm32_romfs_initialize
+ *
+ * Description:
+ *   Registers built-in ROMFS image as block device and mounts it.
+ *
+ * Returned Value:
+ *   Zero (OK) on success, a negated errno value on error.
+ *
+ * Assumptions/Limitations:
+ *   Memory addresses [romfs_data_begin .. romfs_data_end) should contain
+ *   ROMFS volume data, as included in the assembly snippet above (l. 84).
+ *
+ ****************************************************************************/
+
+int stm32_romfs_initialize(void);
+
+#endif /* CONFIG_STM32_ROMFS */
+
+#endif /* __BOARDS_ARM_STM32H7_NUCLEO_H723ZG_SRC_STM32_ROMFS_H */
