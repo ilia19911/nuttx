@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_bringup.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_bringup.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -24,6 +24,8 @@
  * Included Files
  ****************************************************************************/
 
+#include "nuttx/arch.h"
+
 #include <nuttx/config.h>
 
 #include <sys/types.h>
@@ -42,7 +44,7 @@
 #  include "stm32_usbhost.h"
 #endif
 
-#include "nucleo-h723zg.h"
+#include "mems-board-h723vg.h"
 
 #ifdef CONFIG_INPUT_BUTTONS
 #  include <nuttx/input/buttons.h>
@@ -249,6 +251,8 @@ static void stm32_i2ctool(void)
  *     Called from the NSH library
  *
  ****************************************************************************/
+#include <nuttx/serial/serial.h>
+
 
 int stm32_bringup(void)
 {
@@ -273,6 +277,16 @@ int stm32_bringup(void)
              "ERROR: Failed to mount the PROC filesystem: %d\n",  ret);
     }
 #endif /* CONFIG_FS_PROCFS */
+
+#ifdef CONFIG_SENSORS_LSM6DSV
+  ret = stm32_lsm6dsv_initialize("/dev/lsm6dsv0");
+  if (ret < 0)
+  {
+    syslog(LOG_ERR,
+           "ERROR: Failed to initialize LSM6DSV driver: %d\n",
+           ret);
+  }
+#endif /* CONFIG_SENSORS_LSM6DSV */
 
 #ifdef CONFIG_FS_TMPFS
   /* Mount the tmpfs file system */
@@ -396,7 +410,7 @@ int stm32_bringup(void)
       syslog(LOG_ERR, "ERROR: Failed to initialize LSM9DS1 driver: %d\n",
              ret);
     }
-#endif /* CONFIG_SENSORS_LSM6DSL */
+#endif /* CONFIG_SENSORS_LSM9DS1 */
 
 #ifdef CONFIG_SENSORS_LSM303AGR
   ret = stm32_lsm303agr_initialize("/dev/lsm303mag0");

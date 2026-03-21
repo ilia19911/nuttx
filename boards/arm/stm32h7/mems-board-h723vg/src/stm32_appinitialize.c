@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_appinitialize.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_appinitialize.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -29,7 +29,7 @@
 #include <sys/types.h>
 #include <nuttx/board.h>
 
-#include "nucleo-h723zg.h"
+#include "mems-board-h723vg.h"
 
 /****************************************************************************
  * Pre-processor Definitions

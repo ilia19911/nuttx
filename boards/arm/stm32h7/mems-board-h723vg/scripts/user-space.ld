@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/scripts/user-space.ld
+ * boards/arm/stm32h7/nucleo-h723vg/scripts/user-space.ld
  *
  * SPDX-License-Identifier: Apache-2.0
  *

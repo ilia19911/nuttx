@@ -1,5 +1,5 @@
 ############################################################################
-# boards/arm/stm32h7/nucleo-h723zg/kernel/Makefile
+# boards/arm/stm32h7/nucleo-h723vg/kernel/Makefile
 #
 # SPDX-License-Identifier: Apache-2.0
 #

@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/scripts/flash-mcuboot-app.ld
+ * boards/arm/stm32h7/nucleo-h723vg/scripts/flash-mcuboot-app.ld
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -20,7 +20,7 @@
  *
  ****************************************************************************/
 
-/* The STM32H723ZG has 2048Kb of main FLASH memory. The flash memory is
+/* The STM32H723VG has 2048Kb of main FLASH memory. The flash memory is
  * partitioned into a User Flash memory and a System Flash memory. Each
  * of these memories has two banks:
  *
@@ -36,7 +36,7 @@
  *
  *   3) User option bytes for user configuration, only in Bank 1.
  *
- * In the STM32H723ZG, two different boot spaces can be selected through
+ * In the STM32H723VG, two different boot spaces can be selected through
  * the BOOT pin and the boot base address programmed in the BOOT_ADD0 and
  * BOOT_ADD1 option bytes:
  *
@@ -47,11 +47,11 @@
  *
  * TODO: Check next paragraph with nucleo schematics
  *
- * NuttX does not modify these option bytes. On the unmodified NUCLEO-H723ZG
+ * NuttX does not modify these option bytes. On the unmodified NUCLEO-H723VG
  * board, the BOOT0 pin is at ground so by default, the STM32 will boot
  * to address 0x0800:0000 in FLASH.
  *
- * The STM32H723ZG also has 1024Kb of data SRAM.
+ * The STM32H723VG also has 1024Kb of data SRAM.
  * SRAM is split up into several blocks and into three power domains:
  *
  *   1) TCM SRAMs are dedicated to the Cortex-M7 and are accessible with

@@ -37,7 +37,7 @@
 
 #include "stm32_gpio.h"
 #include "stm32_i2c.h"
-#include "nucleo-h723zg.h"
+#include "mems-board-h723vg.h"
 
 /****************************************************************************
  * Public Functions

@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_ssd1306.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_ssd1306.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -34,7 +34,7 @@
 #include <nuttx/i2c/i2c_master.h>
 
 #include "stm32.h"
-#include "nucleo-h723zg.h"
+#include "mems-board-h723vg.h"
 
 /****************************************************************************
  * Pre-processor Definitions

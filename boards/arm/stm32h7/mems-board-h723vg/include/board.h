@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/include/board.h
+ * boards/arm/stm32h7/nucleo-h723vg/include/board.h
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -20,8 +20,8 @@
  *
  ****************************************************************************/
 
-#ifndef __BOARDS_ARM_STM32H7_NUCLEO_H723ZG_INCLUDE_BOARD_H
-#define __BOARDS_ARM_STM32H7_NUCLEO_H723ZG_INCLUDE_BOARD_H
+#ifndef __BOARDS_ARM_STM32H7_MEMS_BOARD_H723VG_INCLUDE_BOARD_H
+#define __BOARDS_ARM_STM32H7_MEMS_BOARD_H723VG_INCLUDE_BOARD_H
 
 /****************************************************************************
  * Included Files
@@ -55,7 +55,7 @@
  *   LSE: 32.768 kHz
  */
 
-#define STM32_BOARD_XTAL        8000000ul /* ST-LINK MCO */
+#define STM32_BOARD_XTAL        16000000ul /* ST-LINK MCO */
 
 #define STM32_HSI_FREQUENCY     16000000ul
 #define STM32_LSI_FREQUENCY     32000
@@ -92,7 +92,7 @@
  */
 
 #define STM32_BOARD_USEHSE
-#define STM32_HSEBYP_ENABLE
+// #define STM32_HSEBYP_ENABLE
 
 #define STM32_PLLCFG_PLLSRC      RCC_PLLCKSELR_PLLSRC_HSE
 
@@ -110,13 +110,13 @@
                                   RCC_PLLCFGR_DIVP1EN | \
                                   RCC_PLLCFGR_DIVQ1EN | \
                                   RCC_PLLCFGR_DIVR1EN)
-#define STM32_PLLCFG_PLL1M       RCC_PLLCKSELR_DIVM1(2)
+#define STM32_PLLCFG_PLL1M       RCC_PLLCKSELR_DIVM1(4)
 #define STM32_PLLCFG_PLL1N       RCC_PLL1DIVR_N1(200)
 #define STM32_PLLCFG_PLL1P       RCC_PLL1DIVR_P1(2)
 #define STM32_PLLCFG_PLL1Q       RCC_PLL1DIVR_Q1(4)
 #define STM32_PLLCFG_PLL1R       RCC_PLL1DIVR_R1(8)
 
-#define STM32_VCO1_FREQUENCY     ((STM32_HSE_FREQUENCY / 2) * 200)
+#define STM32_VCO1_FREQUENCY ((STM32_HSE_FREQUENCY / 4) * 200)
 #define STM32_PLL1P_FREQUENCY    (STM32_VCO1_FREQUENCY / 2)
 #define STM32_PLL1Q_FREQUENCY    (STM32_VCO1_FREQUENCY / 4)
 #define STM32_PLL1R_FREQUENCY    (STM32_VCO1_FREQUENCY / 8)
@@ -379,6 +379,9 @@
 
 /* USART3 (Nucleo Virtual Console) */
 
+#define GPIO_USART1_RX    (GPIO_USART1_RX_2 | GPIO_SPEED_100MHz) /* PA9 */
+#define GPIO_USART1_TX    (GPIO_USART1_TX_2 | GPIO_SPEED_100MHz) /* PA10 */
+
 #define GPIO_USART3_RX    (GPIO_USART3_RX_3 | GPIO_SPEED_100MHz) /* PD9 */
 #define GPIO_USART3_TX    (GPIO_USART3_TX_3 | GPIO_SPEED_100MHz) /* PD8 */
 
@@ -393,7 +396,7 @@
 /* I2C1 Use Nucleo I2C1 pins */
 
 #define GPIO_I2C1_SCL     (GPIO_I2C1_SCL_2 | GPIO_SPEED_50MHz) /* PB8 - D15 */
-#define GPIO_I2C1_SDA     (GPIO_I2C1_SDA_2 | GPIO_SPEED_50MHz) /* PB9 - D14 */
+#define GPIO_I2C1_SDA     (GPIO_I2C1_SDA_1 | GPIO_SPEED_50MHz) /* PB9 - D14 */
 
 /* I2C2 Use Nucleo I2C2 pins */
 
@@ -409,8 +412,8 @@
 
 /* I2C4 Use Nucleo I2C4 pins */
 
-#define GPIO_I2C4_SCL     (GPIO_I2C4_SCL_2  | GPIO_SPEED_50MHz) /* PF1 - D69 */
-#define GPIO_I2C4_SDA     (GPIO_I2C4_SDA_2  | GPIO_SPEED_50MHz) /* PF0 - D68 */
+#define GPIO_I2C4_SCL     (GPIO_I2C4_SCL_1  | GPIO_SPEED_50MHz) /* PF1 - D69 */
+#define GPIO_I2C4_SDA     (GPIO_I2C4_SDA_1  | GPIO_SPEED_50MHz) /* PF0 - D68 */
 #define GPIO_I2C4_SMBA    (GPIO_I2C4_SMBA_2 | GPIO_SPEED_50MHz) /* PF2 - D70 */
 
 /* SPI3 */
@@ -527,4 +530,4 @@ extern "C"
 #endif
 
 #endif /* __ASSEMBLY__ */
-#endif /* __BOARDS_ARM_STM32H7_NUCLEO_H723ZG_INCLUDE_BOARD_H */
+#endif /* __BOARDS_ARM_STM32H7_MEMS_BOARD_H723VG_INCLUDE_BOARD_H */

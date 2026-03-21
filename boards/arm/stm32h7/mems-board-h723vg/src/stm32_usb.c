@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_usb.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_usb.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -43,7 +43,7 @@
 #include "chip.h"
 #include "stm32_gpio.h"
 #include "stm32_otg.h"
-#include "nucleo-h723zg.h"
+#include "mems-board-h723vg.h"
 
 #ifdef CONFIG_STM32H7_OTGFS
 
@@ -58,12 +58,12 @@
 #  undef HAVE_USB
 #endif
 
-#ifndef CONFIG_NUCLEOH723ZG_USBHOST_PRIO
-#  define CONFIG_NUCLEOH723ZG_USBHOST_PRIO 100
+#ifndef CONFIG_NUCLEOH723VG_USBHOST_PRIO
+#  define CONFIG_NUCLEOH723VG_USBHOST_PRIO 100
 #endif
 
-#ifndef CONFIG_NUCLEOH723ZG_USBHOST_STACKSIZE
-#  define CONFIG_NUCLEOH723ZG_USBHOST_STACKSIZE 2048
+#ifndef CONFIG_NUCLEOH723VG_USBHOST_STACKSIZE
+#  define CONFIG_NUCLEOH723VG_USBHOST_STACKSIZE 2048
 #endif
 
 /****************************************************************************
@@ -227,8 +227,8 @@ int stm32_usbhost_initialize(void)
 
       uinfo("Start usbhost_waiter\n");
 
-      ret = kthread_create("usbhost", CONFIG_NUCLEOH723ZG_USBHOST_PRIO,
-                           CONFIG_NUCLEOH723ZG_USBHOST_STACKSIZE,
+      ret = kthread_create("usbhost", CONFIG_NUCLEOH723VG_USBHOST_PRIO,
+                           CONFIG_NUCLEOH723VG_USBHOST_STACKSIZE,
                            usbhost_waiter, NULL);
       return ret < 0 ? -ENOEXEC : OK;
     }

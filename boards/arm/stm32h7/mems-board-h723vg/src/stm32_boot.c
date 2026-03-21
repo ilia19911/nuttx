@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_boot.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_boot.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -33,7 +33,7 @@
 
 #include "arm_internal.h"
 #include "stm32_start.h"
-#include "nucleo-h723zg.h"
+#include "mems-board-h723vg.h"
 
 /****************************************************************************
  * Public Functions

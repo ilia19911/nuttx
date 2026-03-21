@@ -56,6 +56,7 @@
  */
 
 #if defined (CONFIG_ARCH_CHIP_STM32H723ZG) || \
+    defined (CONFIG_ARCH_CHIP_STM32H723VG)  || \
     defined (CONFIG_ARCH_CHIP_STM32H743AG) || \
     defined (CONFIG_ARCH_CHIP_STM32H743AI) || \
     defined (CONFIG_ARCH_CHIP_STM32H743BG) || \
@@ -88,7 +89,7 @@
 #endif
 
 /* Size SRAM */
-#if defined(CONFIG_ARCH_CHIP_STM32H723ZG)
+#if defined(CONFIG_ARCH_CHIP_STM32H723ZG) || defined(CONFIG_ARCH_CHIP_STM32H723VG)
 /* Memory layout for STM32H723 */
 
 #  define STM32H7_SRAM_SIZE        (128*1024)  /* AXI SRAM */

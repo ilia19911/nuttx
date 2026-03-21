@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_pwm.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_pwm.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -35,7 +35,7 @@
 #include "chip.h"
 #include "arm_internal.h"
 #include "stm32_pwm.h"
-#include "nucleo-h723zg.h"
+#include "mems-board-h723vg.h"
 
 /****************************************************************************
  * Pre-processor Definitions
@@ -82,7 +82,7 @@ int stm32_pwm_setup(void)
     {
       /* Get an instance of the PWM interface */
 
-      pwm = stm32_pwminitialize(NUCLEOH723ZG_PWMTIMER);
+      pwm = stm32_pwminitialize(NUCLEOH723VG_PWMTIMER);
       if (!pwm)
         {
           tmrerr("ERROR: Failed to get the STM32 PWM lower half\n");

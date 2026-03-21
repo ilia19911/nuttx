@@ -149,6 +149,7 @@
 /* IOCTL commands unique to the LSM6DSL */
 
 #define SNIOC_LSM6DSLSENSORREAD    _SNIOC(0x0046) /* Arg: file *filep, FAR char *buffer,size_t buflen */
+#define SNIOC_LSM6DSVSENSORREAD    _SNIOC(0x0047) /* Arg: file *filep, FAR char *buffer, size_t buflen */
 
 /* SNIOC_START_SELFTEST */                        /* Arg: file *filep, FAR char *buffer,size_t mode */
 

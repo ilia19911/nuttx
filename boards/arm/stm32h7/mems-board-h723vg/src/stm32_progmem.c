@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_progmem.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_progmem.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -43,7 +43,7 @@
 #include <nuttx/mtd/mtd.h>
 
 #include <stm32.h>
-#include "nucleo-h723zg.h"
+#include "mems-board-h723vg.h"
 #include <stm32_flash.h>
 
 #ifdef HAVE_PROGMEM_CHARDEV

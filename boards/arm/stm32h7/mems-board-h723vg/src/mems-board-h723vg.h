@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/nucleo-h723zg.h
+ * boards/arm/stm32h7/nucleo-h723vg/src/nucleo-h723vg.h
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -20,8 +20,8 @@
  *
  ****************************************************************************/
 
-#ifndef __BOARDS_ARM_STM32H7_NUCLEO_H723ZG_SRC_NUCLEO_H723ZG_H
-#define __BOARDS_ARM_STM32H7_NUCLEO_H723ZG_SRC_NUCLEO_H723ZG_H
+#ifndef __BOARDS_ARM_STM32H7_MEMS_BOARD_H723VG_SRC_H723VG_H
+#define __BOARDS_ARM_STM32H7_MEMS_BOARD_H723VG_SRC_H723VG_H
 
 /****************************************************************************
  * Included Files
@@ -205,21 +205,21 @@
 
 /* OMNIBUSF4 GPIOs **********************************************************/
 
-#define MPU6000_ADDRESS   0x68
-#define MPU6000_1_SCL  (GPIO_I2C1_SCL_2|GPIO_SPEED_50MHz)
-#define MPU6000_1_SDA  (GPIO_I2C1_SDA_2|GPIO_SPEED_50MHz)
+#define LSM6DSV_ADDRESS   0x68
+#define LSM6DSV_1_SCL  (GPIO_I2C1_SCL_2|GPIO_SPEED_50MHz)
+#define LSM6DSV_1_SDA  (GPIO_I2C1_SDA_1|GPIO_SPEED_50MHz)
 
-#define MPU6000_2_SCL  (GPIO_I2C2_SCL_2|GPIO_SPEED_50MHz)
-#define MPU6000_2_SDA  (GPIO_I2C2_SDA_2|GPIO_SPEED_50MHz)
-#define MPU6000_3_SCL  (GPIO_I2C3_SCL_1|GPIO_SPEED_50MHz)
-#define MPU6000_3_SDA  (GPIO_I2C3_SDA_1|GPIO_SPEED_50MHz)
-#define MPU6000_4_SCL  (GPIO_I2C4_SCL_1|GPIO_SPEED_50MHz)
-#define MPU6000_4_SDA  (GPIO_I2C4_SDA_1|GPIO_SPEED_50MHz)
+// #define MPU6000_2_SCL  (GPIO_I2C2_SCL_2|GPIO_SPEED_50MHz)
+// #define MPU6000_2_SDA  (GPIO_I2C2_SDA_2|GPIO_SPEED_50MHz)
+// #define MPU6000_3_SCL  (GPIO_I2C3_SCL_1|GPIO_SPEED_50MHz)
+// #define MPU6000_3_SDA  (GPIO_I2C3_SDA_1|GPIO_SPEED_50MHz)
+#define LSM6DSV_4_SCL  (GPIO_I2C4_SCL_1|GPIO_SPEED_50MHz)
+#define LSM6DSV_4_SDA  (GPIO_I2C4_SDA_1|GPIO_SPEED_50MHz)
 
-#define DEVNODE_MPU6000_0   "/dev/imu0"
-#define DEVNODE_MPU6000_1   "/dev/imu1"
-#define DEVNODE_MPU6000_2   "/dev/imu2"
-#define DEVNODE_MPU6000_3   "/dev/imu3"
+#define DEVNODE_LSM6DSV_0   "/dev/imu0"
+#define DEVNODE_LSM6DSV_1   "/dev/imu1"
+#define DEVNODE_LSM6DSV_2   "/dev/imu2"
+#define DEVNODE_LSM6DSV_3   "/dev/imu3"
 
 /* LMS9DS1 configuration */
 
@@ -236,7 +236,7 @@
 
 /* PWM */
 
-#define NUCLEOH723ZG_PWMTIMER 1
+#define NUCLEOH723VG_PWMTIMER 1
 
 /****************************************************************************
  * Public Function Prototypes
@@ -264,7 +264,7 @@ int stm32_bringup(void);
  *
  * Description:
  *   Called to configure SPI chip select GPIO pins for the
- *   Nucleo-H723ZG board.
+ *   Nucleo-H723VG board.
  *
  ****************************************************************************/
 
@@ -301,9 +301,13 @@ int stm32_gpio_initialize(void);
  *
  * Description:
  *   Called from stm32_usbinitialize very early in initialization to setup
- *   USB-related GPIO pins for the NUCLEO-H723ZG board.
+ *   USB-related GPIO pins for the NUCLEO-H723VG board.
  *
  ****************************************************************************/
+
+#ifdef CONFIG_SENSORS_LSM6DSV
+int stm32_lsm6dsv_initialize(char *devpath);
+#endif
 
 /****************************************************************************
  * Name: stm32_mpu6000_initialize
@@ -343,7 +347,7 @@ int stm32_usbhost_initialize(void);
  *
  ****************************************************************************/
 
-#ifdef CONFIG_SENSORS_LSM303AGR
+#ifdef CONFIG_SENSORS_LSM6DSL
 int stm32_lsm6dsl_initialize(char *devpath);
 #endif
 
@@ -355,7 +359,7 @@ int stm32_lsm6dsl_initialize(char *devpath);
  *
  ****************************************************************************/
 
-#ifdef CONFIG_SENSORS_LSM6DSL
+#ifdef CONFIG_SENSORS_LSM303AGR
 int stm32_lsm303agr_initialize(char *devpath);
 #endif
 
@@ -377,8 +381,8 @@ int stm32_wlinitialize(void);
  *   Initialize I2C-based LSM9DS1.
  ****************************************************************************/
 
-#ifdef CONFIG_SENSORS_LSM9DS1
-int stm32_lsm9ds1_initialize(char *devpath);
+#ifdef CONFIG_SENSORS_LSM9DSV
+int stm32_lsm9dsv_initialize(char *devpath);
 #endif
 
 /****************************************************************************
@@ -430,4 +434,4 @@ int stm32_progmem_init(void);
 int stm32_mmcsd_initialize(int minor);
 #endif
 
-#endif /* __BOARDS_ARM_STM32H7_NUCLEO_H723ZG_SRC_NUCLEO_H723ZG_H */
+#endif /* __BOARDS_ARM_STM32H7_MEMS_BOARD_H723VG_SRC_H723VG_H */

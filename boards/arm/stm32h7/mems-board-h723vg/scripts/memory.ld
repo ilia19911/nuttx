@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/scripts/memory.ld
+ * boards/arm/stm32h7/nucleo-h723vg/scripts/memory.ld
  *
  * SPDX-License-Identifier: Apache-2.0
  *

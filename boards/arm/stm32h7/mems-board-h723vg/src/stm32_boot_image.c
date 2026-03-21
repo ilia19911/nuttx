@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_boot_image.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_boot_image.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *

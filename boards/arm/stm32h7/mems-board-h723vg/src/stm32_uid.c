@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_uid.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_uid.c
  *
  * SPDX-License-Identifier: BSD-3-Clause
  * SPDX-FileCopyrightText: 2015 Marawan Ragab. All rights reserved.

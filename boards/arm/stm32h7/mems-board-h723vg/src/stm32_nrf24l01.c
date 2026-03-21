@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_nrf24l01.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_nrf24l01.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -38,7 +38,7 @@
 #include "arm_internal.h"
 #include "chip.h"
 #include "stm32.h"
-#include "nucleo-h723zg.h"
+#include "mems-board-h723vg.h"
 
 /****************************************************************************
  * Pre-processor Definitions

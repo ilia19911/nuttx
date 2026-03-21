@@ -1,5 +1,5 @@
 # ##############################################################################
-# boards/arm/stm32h7/nucleo-h723zg/src/CMakeLists.txt
+# boards/arm/stm32h7/nucleo-h723vg/src/CMakeLists.txt
 #
 # SPDX-License-Identifier: Apache-2.0
 #

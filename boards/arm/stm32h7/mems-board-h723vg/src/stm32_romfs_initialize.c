@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_romfs_initialize.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_romfs_initialize.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *

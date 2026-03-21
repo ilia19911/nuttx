@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_userleds.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_userleds.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -35,7 +35,7 @@
 #include <arch/board/board.h>
 
 #include "stm32_gpio.h"
-#include "nucleo-h723zg.h"
+#include "mems-board-h723vg.h"
 
 #ifndef CONFIG_ARCH_LEDS
 

@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723vg/src/stm32_romfs.h
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_lsm6dsl.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -20,44 +20,96 @@
  *
  ****************************************************************************/
 
-#ifndef __BOARDS_ARM_STM32H7_MEMS_BOARD_H723VG_SRC_STM32_ROMFS_H
-#define __BOARDS_ARM_STM32H7_MEMS_BOARD_H723VG_SRC_STM32_ROMFS_H
-
 /****************************************************************************
  * Included Files
  ****************************************************************************/
 
 #include <nuttx/config.h>
+#include <nuttx/arch.h>
 
-#ifdef CONFIG_STM32_ROMFS
+#include <errno.h>
+#include <debug.h>
+
+#include "mems-board-h723vg.h"
+#include "nuttx/sensors/lsm6dsv.h"
+#include "stm32.h"
+#include <nuttx/board.h>
+#include <nuttx/i2c/i2c_master.h>
+
+#include <nuttx/sensors/lsm6dsl.h>
 
 /****************************************************************************
  * Pre-processor Definitions
  ****************************************************************************/
 
-#define ROMFS_SECTOR_SIZE 64
+#ifndef CONFIG_STM32H7_I2C1
+#  error "LSM6DSL driver requires CONFIG_STM32H7_I2C1 to be enabled"
+#endif
 
 /****************************************************************************
- * Public Function Prototypes
+ * Public Functions
  ****************************************************************************/
 
 /****************************************************************************
- * Name: stm32_romfs_initialize
+ * Name: stm32_lsm6dsl_initialize
  *
  * Description:
- *   Registers built-in ROMFS image as block device and mounts it.
- *
- * Returned Value:
- *   Zero (OK) on success, a negated errno value on error.
- *
- * Assumptions/Limitations:
- *   Memory addresses [romfs_data_begin .. romfs_data_end) should contain
- *   ROMFS volume data, as included in the assembly snippet above (l. 84).
+ *   Initialize I2C-based LSM6DSL.
  *
  ****************************************************************************/
 
-int stm32_romfs_initialize(void);
+int stm32_lsm6dsv_initialize(char *devpath)
+{
+  stm32_configgpio(LSM6DSV_1_SCL);
+  stm32_configgpio(LSM6DSV_1_SDA);
 
-#endif /* CONFIG_STM32_ROMFS */
+  stm32_configgpio(LSM6DSV_4_SCL);
+  stm32_configgpio(LSM6DSV_4_SDA);
+  struct i2c_master_s *i2c;
+  int ret = OK;
 
-#endif /* __BOARDS_ARM_STM32H7_MEMS_BOARD_H723VG_SRC_STM32_ROMFS_H */
+  sninfo("Initializing LMS6DSL!\n");
+
+  /* Configure the GPIO interrupt */
+
+  stm32_configgpio(GPIO_LPS22HB_INT1);
+
+#if defined(CONFIG_STM32H7_I2C1)
+  i2c = stm32_i2cbus_initialize(1);
+  if (i2c == NULL)
+    {
+      return -ENODEV;
+    }
+
+  sninfo("INFO: Initializing LMS6DSL accelero-gyro sensor over I2C%d\n",
+         ret);
+
+  /* WHO_AM_I check */
+  uint8_t who = 0;
+  struct i2c_config_s config;
+
+  config.frequency = 400000;
+  config.address   = LSM6DSVACCEL_ADDR0;
+  config.addrlen   = 7;
+
+  uint8_t reg = LSM6DSV_WHO_AM_I;
+
+  i2c_writeread(i2c, &config, &reg, 1, &who, 1);
+
+  sninfo("LSM6DSV WHO_AM_I raw = 0x%02X (addr=0x%02X)\n", who, LSM6DSVACCEL_ADDR0);
+
+
+
+  ret = lsm6dsv_sensor_register(devpath, i2c, LSM6DSVACCEL_ADDR0);
+  if (ret < 0)
+    {
+      snerr("ERROR: Failed to initialize LMS6DSL accelero-gyro driver %s\n",
+            devpath);
+      return -ENODEV;
+    }
+
+  sninfo("INFO: LMS6DSL sensor has been initialized successfully\n");
+#endif
+
+  return ret;
+}

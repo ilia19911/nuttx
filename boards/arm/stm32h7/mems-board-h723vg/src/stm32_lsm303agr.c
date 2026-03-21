@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_lsm303agr.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_lsm303agr.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -32,7 +32,7 @@
 
 #include <nuttx/board.h>
 #include "stm32.h"
-#include <nucleo-h723zg.h>
+#include <mems-board-h723vg.h>
 #include <nuttx/sensors/lsm303agr.h>
 
 /****************************************************************************

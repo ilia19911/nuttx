@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_gpio.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_gpio.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -38,7 +38,7 @@
 
 #include "chip.h"
 #include "stm32_gpio.h"
-#include "nucleo-h723zg.h"
+#include "mems-board-h723vg.h"
 
 #if defined(CONFIG_DEV_GPIO) && !defined(CONFIG_GPIO_LOWER_HALF)
 

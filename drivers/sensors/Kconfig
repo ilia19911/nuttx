@@ -937,11 +937,25 @@ config SENSORS_LSM6DSL
 	---help---
 		Enable driver support for the STMicro LSM6DSL.
 
+config SENSORS_LSM6DSV
+	bool "STMicro LSM6DSV support"
+	default n
+	select I2C
+	depends on ALLOW_BSD_COMPONENTS
+	---help---
+		Enable driver support for the STMicro LSM6DSV.
+
 config LSM6DSL_I2C_FREQUENCY
 	int "LSM6DSL I2C frequency"
 	default 400000
 	range 1 400000
 	depends on SENSORS_LSM6DSL
+
+config LSM6DSV_I2C_FREQUENCY
+	int "LSM6DSL I2C frequency"
+	default 400000
+	range 1 400000
+	depends on SENSORS_LSM6DSV
 
 config SENSORS_LSM6DSO32
 	bool "LSM6DSO32 support"

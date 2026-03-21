@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/scripts/kernel.space.ld
+ * boards/arm/stm32h7/nucleo-h723vg/scripts/kernel.space.ld
  *
  * SPDX-License-Identifier: Apache-2.0
  *

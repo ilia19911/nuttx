@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_adc.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_adc.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -36,7 +36,7 @@
 #include "chip.h"
 #include "stm32_gpio.h"
 #include "stm32_adc.h"
-#include "nucleo-h723zg.h"
+#include "mems-board-h723vg.h"
 
 #ifdef CONFIG_ADC
 

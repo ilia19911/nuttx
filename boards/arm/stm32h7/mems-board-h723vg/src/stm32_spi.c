@@ -1,5 +1,5 @@
 /****************************************************************************
- * boards/arm/stm32h7/nucleo-h723zg/src/stm32_spi.c
+ * boards/arm/stm32h7/nucleo-h723vg/src/stm32_spi.c
  *
  * SPDX-License-Identifier: Apache-2.0
  *
@@ -38,7 +38,7 @@
 #include "stm32_gpio.h"
 #include "stm32_spi.h"
 
-#include "nucleo-h723zg.h"
+#include "mems-board-h723vg.h"
 #include <arch/board/board.h>
 
 #ifdef CONFIG_STM32H7_SPI

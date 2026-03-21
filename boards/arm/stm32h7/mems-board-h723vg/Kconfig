@@ -3,7 +3,7 @@
 # see the file kconfig-language.txt in the NuttX tools repository.
 #
 
-if ARCH_BOARD_NUCLEO_H723ZG
+if ARCH_BOARD_MEMS_BOARD_H723VG
 
 config STM32_ROMFS
 	bool "Automount baked-in ROMFS image"
@@ -27,4 +27,4 @@ config STM32_ROMFS_IMAGEFILE
 	depends on STM32_ROMFS
 	default "../../../rom.img"
 
-endif # ARCH_BOARD_NUCLEO_H723ZG
+endif # ARCH_BOARD_MEMS_BOARD_H723VG

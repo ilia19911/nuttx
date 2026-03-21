@@ -1,5 +1,5 @@
 ############################################################################
-# boards/arm/stm32h7/nucleo-h723zg/src/Makefile
+# boards/arm/stm32h7/nucleo-h723vg/src/Makefile
 #
 # SPDX-License-Identifier: Apache-2.0
 #
@@ -56,6 +56,9 @@ endif
 
 ifeq ($(CONFIG_SENSORS_LSM6DSL),y)
 CSRCS += stm32_lsm6dsl.c
+endif
+ifeq ($(CONFIG_SENSORS_LSM6DSV),y)
+CSRCS += stm32_lsm6dsv.c
 endif
 
 ifeq ($(CONFIG_SENSORS_LSM9DS1),y)
