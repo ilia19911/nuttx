@@ -14,13 +14,8 @@
 
 /* Accelerometer addresses */
 
-#define LSM6DSVACCEL_ADDR0  (0xD4 >> 1) /* 0x6A low */
-#define LSM6DSVACCEL_ADDR1  (0xD6 >> 1) /* 0x6B high */
-
-/* Gyroscope addresses */
-
-#define LSM6DSVGYRO_ADDR0   (0xD4 >> 1) /* 0x6A low */
-#define LSM6DSVGYRO_ADDR1   (0xD6 >> 1) /* 0x6B high */
+#define LSM6DSV_ADDR0  0x6A /* SA0 = 0 */
+#define LSM6DSV_ADDR1  0x6B /* SA0 = 1 */
 
 /* Registers (based on LSM6DSV datasheet) */
 

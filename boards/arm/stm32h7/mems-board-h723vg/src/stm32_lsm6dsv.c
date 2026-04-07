@@ -65,18 +65,20 @@ int stm32_lsm6dsv_initialize(char *devpath)
 
   stm32_configgpio(LSM6DSV_4_SCL);
   stm32_configgpio(LSM6DSV_4_SDA);
-  struct i2c_master_s *i2c;
+  struct i2c_master_s *i2c1;
+  struct i2c_master_s *i2c4;
   int ret = OK;
 
-  sninfo("Initializing LMS6DSL!\n");
+  sninfo("Initializing LMS6DSV!\n");
 
   /* Configure the GPIO interrupt */
 
   stm32_configgpio(GPIO_LPS22HB_INT1);
 
 #if defined(CONFIG_STM32H7_I2C1)
-  i2c = stm32_i2cbus_initialize(1);
-  if (i2c == NULL)
+  i2c1 = stm32_i2cbus_initialize(1);
+  i2c4 = stm32_i2cbus_initialize(4);
+  if (!i2c1 || !i2c4)
     {
       return -ENODEV;
     }
@@ -85,22 +87,40 @@ int stm32_lsm6dsv_initialize(char *devpath)
          ret);
 
   /* WHO_AM_I check */
-  uint8_t who = 0;
+  uint8_t who1_0 = 0;
+  uint8_t who1_1 = 0;
+  uint8_t who4_0 = 0;
+  uint8_t who4_1 = 0;
   struct i2c_config_s config;
 
   config.frequency = 400000;
-  config.address   = LSM6DSVACCEL_ADDR0;
+  config.address   = LSM6DSV_ADDR0;
   config.addrlen   = 7;
 
   uint8_t reg = LSM6DSV_WHO_AM_I;
 
-  i2c_writeread(i2c, &config, &reg, 1, &who, 1);
+  i2c_writeread(i2c1, &config, &reg, 1, &who1_0, 1);
+  i2c_writeread(i2c4, &config, &reg, 1, &who4_0, 1);
 
-  sninfo("LSM6DSV WHO_AM_I raw = 0x%02X (addr=0x%02X)\n", who, LSM6DSVACCEL_ADDR0);
+  config.address   = LSM6DSV_ADDR1;
+
+  i2c_writeread(i2c1, &config, &reg, 1, &who1_1, 1);
+  i2c_writeread(i2c4, &config, &reg, 1, &who4_1, 1);
 
 
+  char dev_name[50];
+  memcpy(dev_name, devpath, strlen(devpath));
+  dev_name[strlen(devpath)+1] = 0;
+  dev_name[strlen(devpath)] = '1';
+  ret = lsm6dsv_sensor_register(dev_name, i2c1, LSM6DSV_ADDR0);
+  dev_name[strlen(devpath)] = '2';
+  ret &= lsm6dsv_sensor_register(dev_name, i2c1, LSM6DSV_ADDR1);
+  dev_name[strlen(devpath)] = '3';
+  ret &= lsm6dsv_sensor_register(dev_name, i2c4, LSM6DSV_ADDR0);
+  dev_name[strlen(devpath)] = '4';
+  ret &= lsm6dsv_sensor_register(dev_name, i2c4, LSM6DSV_ADDR1);
 
-  ret = lsm6dsv_sensor_register(devpath, i2c, LSM6DSVACCEL_ADDR0);
+
   if (ret < 0)
     {
       snerr("ERROR: Failed to initialize LMS6DSL accelero-gyro driver %s\n",
@@ -110,6 +130,8 @@ int stm32_lsm6dsv_initialize(char *devpath)
 
   sninfo("INFO: LMS6DSL sensor has been initialized successfully\n");
 #endif
+
+
 
   return ret;
 }

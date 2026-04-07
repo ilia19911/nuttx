@@ -279,7 +279,7 @@ int stm32_bringup(void)
 #endif /* CONFIG_FS_PROCFS */
 
 #ifdef CONFIG_SENSORS_LSM6DSV
-  ret = stm32_lsm6dsv_initialize("/dev/lsm6dsv0");
+  ret = stm32_lsm6dsv_initialize("/dev/lsm6dsv");
   if (ret < 0)
   {
     syslog(LOG_ERR,
