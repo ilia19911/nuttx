@@ -25,6 +25,8 @@
  ****************************************************************************/
 
 #include "nuttx/arch.h"
+#include "nuttx/mtd/mtd.h"
+#include "sys/stat.h"
 
 #include <nuttx/config.h>
 
@@ -33,6 +35,7 @@
 #include <errno.h>
 
 #include <arch/board/board.h>
+
 
 #include <nuttx/fs/fs.h>
 
@@ -72,7 +75,19 @@
 #  include <nuttx/usb/rndis.h>
 #endif
 
+#if  defined(CONFIG_MTD_PROGMEM)
+#  include <nuttx/mtd/mtd.h>
+#endif
+
+
+#ifdef CONFIG_FSUTILS_MKFATFS
+struct fat_format_s;
+extern int mkfatfs(FAR const char *pathname,
+                   FAR struct fat_format_s *fmt);
+#endif
+
 #include "stm32_gpio.h"
+#include <string.h>
 
 /****************************************************************************
  * Private Functions
@@ -254,6 +269,45 @@ static void stm32_i2ctool(void)
 #include <nuttx/serial/serial.h>
 
 
+struct fat_format_s
+{
+  uint8_t  ff_nfats;           /* Number of FATs */
+  uint8_t  ff_fattype;         /* FAT size: 0 (autoselect), 12, 16, or 32 */
+  uint8_t  ff_clustshift;      /* Log2 of sectors per cluster: 0-5, 0xff (autoselect) */
+  uint8_t  ff_volumelabel[11]; /* Volume label */
+  uint16_t ff_backupboot;      /* Sector number of the backup boot sector (0=use default) */
+  uint16_t ff_rootdirentries;  /* Number of root directory entries */
+  uint16_t ff_rsvdseccount;    /* Reserved sectors */
+  uint32_t ff_hidsec;          /* Count of hidden sectors preceding fat */
+  uint32_t ff_volumeid;        /* FAT volume id */
+  uint32_t ff_nsectors;        /* Number of sectors from device to use: 0: Use all */
+};
+
+#define MKFATFS_DEFAULT_NFATS        2     /* 2: Default number of FATs */
+#define MKFATFS_DEFAULT_FATTYPE      0     /* 0: Autoselect FAT size */
+#define MKFATFS_DEFAULT_CLUSTSHIFT   0xff  /* 0xff: Autoselect cluster size */
+#define MKFATFS_DEFAULT_VOLUMELABEL  { ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ', ' ' }
+#define MKFATFS_DEFAULT_BKUPBOOT     0     /* 0: Determine sector number of the backup boot sector */
+#define MKFATFS_DEFAULT_ROOTDIRENTS  0     /* 0: Autoselect number of root directory entries */
+#define MKFATFS_DEFAULT_RSVDSECCOUNT 0     /* 0: Autoselect number reserved sectors (usually 32) */
+#define MKFATFS_DEFAULT_HIDSEC       0     /* No hidden sectors */
+#define MKFATFS_DEFAULT_VOLUMEID     0     /* No volume ID */
+#define MKFATFS_DEFAULT_NSECTORS     0     /* 0: Use all sectors on device */
+
+#define FAT_FORMAT_INITIALIZER \
+{ \
+MKFATFS_DEFAULT_NFATS, \
+MKFATFS_DEFAULT_FATTYPE, \
+MKFATFS_DEFAULT_CLUSTSHIFT, \
+MKFATFS_DEFAULT_VOLUMELABEL, \
+MKFATFS_DEFAULT_BKUPBOOT, \
+MKFATFS_DEFAULT_ROOTDIRENTS, \
+MKFATFS_DEFAULT_RSVDSECCOUNT, \
+MKFATFS_DEFAULT_HIDSEC, \
+MKFATFS_DEFAULT_VOLUMEID, \
+MKFATFS_DEFAULT_NSECTORS \
+}
+
 int stm32_bringup(void)
 {
   int ret = OK;
@@ -288,6 +342,82 @@ int stm32_bringup(void)
   }
 #endif /* CONFIG_SENSORS_LSM6DSV */
 
+// #if defined(CONFIG_MTD)
+  struct mtd_dev_s *mtd;
+
+  mtd = progmem_initialize();
+  if (mtd == NULL)
+  {
+    syslog(LOG_ERR, "ERROR: progmem_initialize\n");
+  }
+
+  struct mtd_geometry_s geo;
+  mtd->ioctl(mtd, MTDIOC_GEOMETRY, (unsigned long)&geo);
+
+  syslog(LOG_ERR, "MTD: blocksize=%lu erasesize=%lu neraseblocks=%lu\n",
+         (unsigned long)geo.blocksize,
+         (unsigned long)geo.erasesize,
+         (unsigned long)geo.neraseblocks);
+
+  struct mtd_dev_s *sub_mtd = mtd_partition(mtd, 4096*4, 4096*4);
+
+
+  ret = register_mtddriver("/dev/flash", sub_mtd, 0, sub_mtd);
+  if (ret < 0)
+  {
+    syslog(LOG_ERR, "ERROR: register_mtddriver() failed: %d\n", ret);
+  }
+
+  if (sub_mtd == NULL)
+  {
+    syslog(LOG_ERR, "ERROR: Failed to create MTD partition\n");
+    return -1;
+  }
+
+  struct mtd_dev_s *sub_mtd_conv = s512_initialize(sub_mtd);
+
+  int minor = 0;
+
+  ret = ftl_initialize(minor, sub_mtd_conv);
+  if (ret < 0)
+  {
+    syslog(LOG_ERR, "ERROR: ftl_initialize failed: %d\n", ret);
+    return ret;
+  }
+  /* Create mount point */
+  mkdir("/mnt", 0777);
+
+  /* Mount VFAT from block device */
+  ret = nx_mount("/dev/mtdblock0", "/mnt", "vfat", 0, NULL);
+  if (ret < 0)
+  {
+    syslog(LOG_WARNING, "VFAT mount failed (%d), trying to format...\n", ret);
+
+    /* Try to create FAT filesystem */
+#ifdef CONFIG_FSUTILS_MKFATFS
+
+    struct fat_format_s var = FAT_FORMAT_INITIALIZER;
+    ret = mkfatfs("/dev/mtdblock0", &var);
+    if (ret < 0)
+    {
+      syslog(LOG_ERR, "ERROR: mkfatfs failed: %d\n", ret);
+      return ret;
+    }
+
+    syslog(LOG_INFO, "mkfatfs success, retry mount\n");
+
+    ret = nx_mount("/dev/mtdblock0", "/mnt", "vfat", 0, NULL);
+    if (ret < 0)
+    {
+      syslog(LOG_ERR, "ERROR: mount after mkfatfs failed: %d\n", ret);
+      return ret;
+    }
+#else
+    syslog(LOG_ERR, "ERROR: mkfatfs not enabled in config\n");
+    return ret;
+#endif
+  }
+// #endif
 #ifdef CONFIG_FS_TMPFS
   /* Mount the tmpfs file system */
 

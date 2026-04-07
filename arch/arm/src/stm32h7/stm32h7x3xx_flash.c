@@ -152,6 +152,10 @@
 
 #define FLASH_TIMEOUT_VALUE 5000000  /* 5s */
 
+#ifndef STM32_DUAL_BANK
+#define STM32_DUAL_BANK 0
+#endif
+
 /****************************************************************************
  * Private Types
  ****************************************************************************/
@@ -177,7 +181,7 @@ static struct stm32h7_flash_priv_s stm32h7_flash_bank1_priv =
   .stblock = 0,
   .stpage  = 0,
 };
-#if STM32_DUAL_BANK
+#if defined(STM32_DUAL_BANK) && STM32_DUAL_BANK
 static struct stm32h7_flash_priv_s stm32h7_flash_bank2_priv =
 {
   .lock    = NXMUTEX_INITIALIZER,
@@ -301,7 +305,7 @@ struct stm32h7_flash_priv_s * stm32h7_flash_bank(size_t address)
   struct stm32h7_flash_priv_s *priv = NULL;
 
   uint32_t bank_size;
-#ifdef STM32_DUAL_BANK
+#if defined(STM32_DUAL_BANK) && STM32_DUAL_BANK
   bank_size = stm32h7_flash_size(priv) / 2;
 #else
   bank_size = stm32h7_flash_size(priv);
@@ -313,7 +317,7 @@ struct stm32h7_flash_priv_s * stm32h7_flash_bank(size_t address)
       priv = &stm32h7_flash_bank1_priv;
     }
 
-#ifdef STM32_DUAL_BANK
+#if defined(STM32_DUAL_BANK) && STM32_DUAL_BANK
   else if (address >= stm32h7_flash_bank2_priv.base &&
            address < stm32h7_flash_bank2_priv.base + bank_size)
     {
