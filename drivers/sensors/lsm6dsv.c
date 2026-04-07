@@ -91,7 +91,7 @@ static int lsm6dsv_read(FAR struct lsm6dsv_dev_s *priv,
   uint8_t buf[12];
   int ret;
 
-  config.frequency = 400000;
+  config.frequency = 1000000;
   config.address   = priv->addr;
   config.addrlen   = 7;
 

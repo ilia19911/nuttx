@@ -93,7 +93,7 @@ int stm32_lsm6dsv_initialize(char *devpath)
   uint8_t who4_1 = 0;
   struct i2c_config_s config;
 
-  config.frequency = 400000;
+  config.frequency = 1000000;
   config.address   = LSM6DSV_ADDR0;
   config.addrlen   = 7;
 
@@ -107,18 +107,11 @@ int stm32_lsm6dsv_initialize(char *devpath)
   i2c_writeread(i2c1, &config, &reg, 1, &who1_1, 1);
   i2c_writeread(i2c4, &config, &reg, 1, &who4_1, 1);
 
+  ret = lsm6dsv_sensor_register(DEVNODE_LSM6DSV_0, i2c1, LSM6DSV_ADDR0);
+  ret &= lsm6dsv_sensor_register(DEVNODE_LSM6DSV_1, i2c1, LSM6DSV_ADDR1);
+  ret &= lsm6dsv_sensor_register(DEVNODE_LSM6DSV_2, i2c4, LSM6DSV_ADDR0);
+  ret &= lsm6dsv_sensor_register(DEVNODE_LSM6DSV_3, i2c4, LSM6DSV_ADDR1);
 
-  char dev_name[50];
-  memcpy(dev_name, devpath, strlen(devpath));
-  dev_name[strlen(devpath)+1] = 0;
-  dev_name[strlen(devpath)] = '1';
-  ret = lsm6dsv_sensor_register(dev_name, i2c1, LSM6DSV_ADDR0);
-  dev_name[strlen(devpath)] = '2';
-  ret &= lsm6dsv_sensor_register(dev_name, i2c1, LSM6DSV_ADDR1);
-  dev_name[strlen(devpath)] = '3';
-  ret &= lsm6dsv_sensor_register(dev_name, i2c4, LSM6DSV_ADDR0);
-  dev_name[strlen(devpath)] = '4';
-  ret &= lsm6dsv_sensor_register(dev_name, i2c4, LSM6DSV_ADDR1);
 
 
   if (ret < 0)
