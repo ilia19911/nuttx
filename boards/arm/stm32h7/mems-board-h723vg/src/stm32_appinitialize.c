@@ -26,8 +26,8 @@
 
 #include <nuttx/config.h>
 
-#include <sys/types.h>
 #include <nuttx/board.h>
+#include <sys/types.h>
 
 #include "mems-board-h723vg.h"
 
@@ -63,13 +63,64 @@
  *   any failure to indicate the nature of the failure.
  *
  ****************************************************************************/
+#include "debug.h"
+#include <errno.h>
 
-int board_app_initialize(uintptr_t arg)
-{
+// #include <nuttx/binfmt/builtin.h>
+// #include <nuttx-apps/include/builtin/builtin.h>
+#include <nuttx/lib/builtin.h>
+
+struct nsh_param_s {
+  /* Redirect input/output through `fd` OR `path_name`
+   *
+   * Select one:
+   * 1. Using fd_in/fd_out as oldfd for dup2() if greater than -1.
+   * 2. Using file_in/file_out as full path to the file if it is
+   *    not NULL, and oflags_in/oflags_out as flags for open().
+   */
+
+  int fd_in;
+  int fd_out;
+
+  int oflags_in;
+  int oflags_out;
+  FAR const char *file_in;
+  FAR const char *file_out;
+};
+
+extern int exec_builtin(FAR const char *appname, FAR char *const *argv,
+                        FAR const struct nsh_param_s *param);
+
+int board_app_initialize(uintptr_t arg) {
 #ifdef CONFIG_BOARD_LATE_INITIALIZE
   /* Board initialization already performed by board_late_initialize() */
+  pid_t pid;
+  const char *argv[] = {"mems", NULL};
+  int ret;
 
-  return OK;
+  _info("board_late_initialize: Starting mems...\n");
+
+  /* 1. Инициализируем атрибуты для posix_spawn */
+  posix_spawnattr_t attr;
+  posix_spawnattr_init(&attr);
+
+  /* 2. Настраиваем планировщик и приоритет для нового приложения */
+  struct sched_param param;
+  param.sched_priority = 100;
+  posix_spawnattr_setschedpolicy(&attr, SCHED_RR);
+  posix_spawnattr_setschedparam(&attr, &param);
+
+  /* 3. Запускаем задачу mems с использованием posix_spawnp */
+  ret = posix_spawnp(&pid, "mems", NULL, &attr, (char *const *)argv, NULL);
+  if (ret != 0) {
+    _err("board_late_initialize: ERROR: posix_spawnp failed: %d\n", errno);
+  } else {
+    _info("board_late_initialize: mems started successfully with PID %d\n",
+          pid);
+  }
+
+  /* 4. Освобождаем ресурсы атрибутов */
+  posix_spawnattr_destroy(&attr);
 #else
   /* Perform board-specific initialization */
 

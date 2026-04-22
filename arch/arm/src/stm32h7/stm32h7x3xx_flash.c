@@ -841,13 +841,17 @@ ssize_t up_progmem_write(size_t addr, const void *buf, size_t count)
       return -EFAULT;
     }
 
-  /* Check for valid address range */
+  /* NOTE: STM32H7 in single bank mode exposes full flash in one bank.
+   * Using /2 here incorrectly rejects valid addresses in upper sectors.
+   */
+  /* Use full flash size instead of half (single bank mode) */
+  size_t bank_size = stm32h7_flash_size(priv);
 
   if (addr < priv->base ||
-      addr + count > priv->base + (STM32_FLASH_SIZE / 2))
-    {
-      return -EFAULT;
-    }
+      addr + count > priv->base + bank_size)
+  {
+    return -EFAULT;
+  }
 
   ret = nxmutex_lock(&priv->lock);
   if (ret < 0)

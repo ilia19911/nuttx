@@ -28,12 +28,12 @@
 
 #include <debug.h>
 
-#include <nuttx/board.h>
 #include <arch/board/board.h>
+#include <nuttx/board.h>
 
 #include "arm_internal.h"
-#include "stm32_start.h"
 #include "mems-board-h723vg.h"
+#include "stm32_start.h"
 
 /****************************************************************************
  * Public Functions
@@ -50,8 +50,7 @@
  *
  ****************************************************************************/
 
-void stm32_boardinitialize(void)
-{
+void stm32_boardinitialize(void) {
 #ifdef CONFIG_ARCH_LEDS
   /* Configure on-board LEDs if LED support has been selected. */
 
@@ -85,9 +84,31 @@ void stm32_boardinitialize(void)
  *
  ****************************************************************************/
 
+// #include <nuttx/binfmt/builtin.h>
+
+extern int mems_main(int argc, char *argv[]);
+
+static int mems_launcher(int argc, char *argv[]) {
+  /* Даём системе время на инициализацию (можно уменьшить или убрать) */
+  sleep(2);
+
+  const char *name = "mems";
+  char *const args[] = {(char *)name, NULL};
+
+  _info("mems_launcher: Starting '%s'...\n", name);
+  int pid = task_create(name, 100, 4096, mems_main, args);
+  if (pid < 0) {
+    _err("mems_launcher: task_create failed: %d\n", errno);
+  } else {
+    _info("mems_launcher: '%s' started with PID %d\n", name, pid);
+  }
+  return 0;
+}
+
 #ifdef CONFIG_BOARD_LATE_INITIALIZE
-void board_late_initialize(void)
-{
+void board_late_initialize(void) {
   stm32_bringup();
+
+  task_create("mems_launcher", 100, 2048, mems_launcher, NULL);
 }
 #endif
